@@ -13,7 +13,7 @@
   </a>
 </p>
 
-HouseSplit is a small mobile-first rent calculator for housemates. It splits a monthly rent by calendar day and by the number of people present on each day, so solo days, shared days, and vacancy days are handled explicitly.
+HouseSplit is a small mobile-first rent calculator for housemates. It splits a monthly rent by nights stayed and by the number of people present each night, so solo nights, shared nights, and vacancy nights are handled explicitly.
 
 Open the live app: **[n0ahtm.github.io/HouseSplit](https://n0ahtm.github.io/HouseSplit/)**
 
@@ -23,8 +23,8 @@ Built with **plain JavaScript**, **HTML**, and **CSS**. No backend, no accounts,
 
 1. Open [HouseSplit](https://n0ahtm.github.io/HouseSplit/) on your phone.
 2. Enter the monthly rent, month, currency, and housemates.
-3. Add date ranges for each person's stays.
-4. Choose how empty days should be handled.
+3. Add arrival and checkout dates for each person's stays.
+4. Choose how empty nights should be handled.
 5. Copy the summary and send it to your group chat.
 
 On iPhone or Android, add the site to your home screen to use it like a small app. See [Usage](docs/USAGE.md).
@@ -34,7 +34,7 @@ On iPhone or Android, add the site to your home screen to use it like a small ap
 - Mobile-first interface for iOS and Android browsers.
 - Installable PWA when opened from the GitHub Pages HTTPS URL.
 - Per-person stay ranges with multiple ranges per person.
-- Daily rent splitting by actual occupancy.
+- Nightly rent splitting by actual occupancy.
 - Vacancy handling: show separately or distribute across all people.
 - Exact cent-based rounding so totals remain consistent.
 - Shareable text summary for messages.
@@ -44,10 +44,10 @@ On iPhone or Android, add the site to your home screen to use it like a small ap
 
 ## Calculation Model
 
-HouseSplit first splits the monthly rent across every day in the selected month. For each day:
+HouseSplit first splits the monthly rent across every night in the selected month. Arrival dates count; checkout dates do not count. For each night:
 
-- if one person is present, that person pays the full daily amount;
-- if multiple people are present, the daily amount is split equally;
+- if one person is present, that person pays the full nightly amount;
+- if multiple people are present, the nightly amount is split equally;
 - if nobody is present, the amount is either shown as vacancy or split across all people, depending on the selected setting.
 
 The app calculates in cents and distributes rounding leftovers deterministically.

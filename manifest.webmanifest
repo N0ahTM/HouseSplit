@@ -1,17 +1,36 @@
 {
-  "name": "Hauskosten teilen",
-  "short_name": "Haus Split",
-  "description": "Monatsmiete nach Anwesenheit und Tagesbesetzung teilen.",
-  "start_url": "./index.html",
+  "name": "HouseSplit - Miete nach Nächten teilen",
+  "short_name": "HouseSplit",
+  "description": "Monatsmiete nach Anreise, Abreise, Nächten und Leerstand fair teilen.",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#f6f7f3",
+  "orientation": "portrait-primary",
+  "background_color": "#f4f6f1",
   "theme_color": "#0f766e",
+  "categories": ["finance", "utilities", "productivity"],
   "icons": [
     {
       "src": "icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "docs/assets/mobile-preview.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "HouseSplit mobile rent calculator"
+    },
+    {
+      "src": "docs/assets/repository-open-graph.jpg",
+      "sizes": "1280x640",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "HouseSplit overview"
     }
   ]
 }

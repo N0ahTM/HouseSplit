@@ -24,10 +24,12 @@ https://n0ahtm.github.io/HouseSplit/
 
 1. Enter the monthly rent and select the month.
 2. Add each person.
-3. Add one or more stay ranges for each person.
+3. Add one or more arrival and checkout ranges for each person.
 4. Choose vacancy behavior:
-   - `Separat anzeigen`: empty days remain separate.
-   - `Auf alle Personen verteilen`: empty days are split across everyone.
+   - `Separat anzeigen`: empty nights remain separate.
+   - `Auf alle Personen verteilen`: empty nights are split across everyone.
 5. Copy the summary text and send it to the group.
 
 Data is saved locally in the browser that opened the app.
+
+Arrival dates count as occupied nights. Checkout dates do not count.

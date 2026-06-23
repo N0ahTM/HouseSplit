@@ -2,13 +2,16 @@
   "use strict";
 
   const {
+    addDaysISO,
     calculateRentShare,
     daysInMonth,
     formatISODate,
     formatMoney,
+    nextMonthStartISO,
+    parseISODate,
   } = window.RentShareCalculator;
 
-  const STORAGE_KEY = "house-share-calculator:v1";
+  const STORAGE_KEY = "house-share-calculator:nights:v2";
   const root = document.querySelector("#app");
   const copyStatus = { message: "", timeout: null };
 
@@ -35,32 +38,45 @@
     const lastDay = daysInMonth(state.year, state.month);
     return {
       start: formatISODate(state.year, state.month, 1),
-      end: formatISODate(state.year, state.month, lastDay),
+      lastNight: formatISODate(state.year, state.month, lastDay),
+      checkout: nextMonthStartISO(state.year, state.month),
     };
   }
 
   function defaultState() {
     const base = currentYearMonth();
-    const bounds = {
-      start: formatISODate(base.year, base.month, 1),
-      end: formatISODate(base.year, base.month, daysInMonth(base.year, base.month)),
-    };
+    const bounds = monthBounds(base);
 
     return {
       rent: 2000,
       currency: "USD",
       year: base.year,
       month: base.month,
-      emptyDayPolicy: "unassigned",
+      emptyNightPolicy: "unassigned",
       people: [
         {
           id: createId("person"),
           name: "Person 1",
-          stays: [{ id: createId("stay"), start: bounds.start, end: bounds.end }],
+          stays: [{ id: createId("stay"), start: bounds.start, end: bounds.checkout }],
         },
         { id: createId("person"), name: "Person 2", stays: [] },
         { id: createId("person"), name: "Person 3", stays: [] },
       ],
+    };
+  }
+
+  function normalizeStay(stay) {
+    const start = stay && typeof stay.start === "string" ? stay.start : "";
+    let end = stay && typeof stay.end === "string" ? stay.end : "";
+
+    if (start && end && parseISODate(end) !== null && parseISODate(start) !== null) {
+      if (parseISODate(end) <= parseISODate(start)) end = addDaysISO(start, 1);
+    }
+
+    return {
+      id: (stay && stay.id) || createId("stay"),
+      start,
+      end,
     };
   }
 
@@ -70,26 +86,24 @@
     const year = Number(state.year) || fallback.year;
     const month = Number(state.month) || fallback.month;
     const people = Array.isArray(state.people) ? state.people : fallback.people;
+    const emptyNightPolicy =
+      state.emptyNightPolicy === "split_all" || state.emptyDayPolicy === "split_all"
+        ? "split_all"
+        : "unassigned";
 
     return {
       rent: Number.isFinite(Number(state.rent)) ? Number(state.rent) : fallback.rent,
       currency: typeof state.currency === "string" ? state.currency : "USD",
       year: Math.min(Math.max(year, 1900), 2200),
       month: Math.min(Math.max(month, 1), 12),
-      emptyDayPolicy: state.emptyDayPolicy === "split_all" ? "split_all" : "unassigned",
+      emptyNightPolicy,
       people: people.map((person, personIndex) => ({
         id: person.id || createId("person"),
         name:
           typeof person.name === "string" && person.name.trim()
             ? person.name
             : `Person ${personIndex + 1}`,
-        stays: Array.isArray(person.stays)
-          ? person.stays.map((stay) => ({
-              id: stay.id || createId("stay"),
-              start: stay.start || "",
-              end: stay.end || "",
-            }))
-          : [],
+        stays: Array.isArray(person.stays) ? person.stays.map(normalizeStay) : [],
       })),
     };
   }
@@ -152,19 +166,40 @@
     }).format(date);
   }
 
+  function dateLabel(value) {
+    const dayNumber = parseISODate(value);
+    if (dayNumber === null) return value || "";
+    return new Intl.DateTimeFormat("de-DE", {
+      day: "2-digit",
+      month: "short",
+      timeZone: "UTC",
+    }).format(new Date(dayNumber * 24 * 60 * 60 * 1000));
+  }
+
   function money(cents) {
     return formatMoney(cents, state.currency, "de-DE");
+  }
+
+  function nightWord(count) {
+    return count === 1 ? "Nacht" : "Nächte";
+  }
+
+  function vacancyLabel(calculation) {
+    return calculation.emptyNightPolicy === "split_all"
+      ? "Leerstand verteilt"
+      : "Leerstand separat";
   }
 
   function buildShareText(calculation) {
     const lines = [
       `Hausmiete ${monthLabel()}: ${money(calculation.rentCents)}`,
+      `Basis: ${calculation.monthNights} ${nightWord(calculation.monthNights)} · Anreise zählt, Abreise nicht`,
       "",
       "Anteile:",
       ...calculation.totals.map((person) => {
         const parts = [
           `${person.name}: ${money(person.totalCents)}`,
-          `${person.daysPresent} Tage`,
+          `${person.nightsPresent} ${nightWord(person.nightsPresent)}`,
         ];
         if (person.emptyShareCents > 0) {
           parts.push(`${money(person.emptyShareCents)} Leerstand`);
@@ -174,7 +209,7 @@
     ];
 
     if (calculation.unassignedCents > 0) {
-      lines.push(`Leerstand separat: ${money(calculation.unassignedCents)}`);
+      lines.push(`${vacancyLabel(calculation)}: ${money(calculation.unassignedCents)}`);
     }
 
     lines.push("", `Summe verteilt: ${money(calculation.allocatedCents)}`);
@@ -185,12 +220,37 @@
     return new Map(calculation.totals.map((person) => [person.id, person]));
   }
 
+  function renderHero(calculation) {
+    return `
+      <header class="app-hero">
+        <div class="brand-block">
+          <p class="eyebrow">HouseSplit</p>
+          <h1>Miete nach Nächten teilen</h1>
+        </div>
+        <div class="hero-facts" aria-label="Monatsübersicht">
+          <div>
+            <span>${escapeHtml(monthLabel())}</span>
+            <strong>${money(calculation.rentCents)}</strong>
+          </div>
+          <div>
+            <span>Zeitraum</span>
+            <strong>${calculation.monthNights} ${nightWord(calculation.monthNights)}</strong>
+          </div>
+          <div>
+            <span>Modus</span>
+            <strong>Nächte</strong>
+          </div>
+        </div>
+      </header>
+    `;
+  }
+
   function renderControls() {
     return `
-      <section class="panel controls-panel" aria-labelledby="settings-title">
+      <section class="setup-panel" aria-labelledby="settings-title">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Rechnung</p>
+            <p class="eyebrow">Setup</p>
             <h2 id="settings-title">Monatsdaten</h2>
           </div>
           <button class="ghost-button" type="button" data-action="reset">Zurücksetzen</button>
@@ -219,11 +279,11 @@
             </select>
           </label>
 
-          <label class="field field-wide">
+          <label class="field">
             <span>Leerstand</span>
-            <select data-field="emptyDayPolicy">
-              <option value="unassigned" ${state.emptyDayPolicy === "unassigned" ? "selected" : ""}>Separat anzeigen</option>
-              <option value="split_all" ${state.emptyDayPolicy === "split_all" ? "selected" : ""}>Auf alle Personen verteilen</option>
+            <select data-field="emptyNightPolicy">
+              <option value="unassigned" ${state.emptyNightPolicy === "unassigned" ? "selected" : ""}>Separat anzeigen</option>
+              <option value="split_all" ${state.emptyNightPolicy === "split_all" ? "selected" : ""}>Auf alle Personen verteilen</option>
             </select>
           </label>
         </div>
@@ -235,12 +295,12 @@
     return `
       <div class="stay-row" data-person-id="${escapeHtml(person.id)}" data-stay-id="${escapeHtml(stay.id)}">
         <label class="field compact">
-          <span>Von</span>
-          <input data-field="stay-start" type="date" min="${bounds.start}" max="${bounds.end}" value="${escapeHtml(stay.start)}">
+          <span>Anreise</span>
+          <input data-field="stay-start" type="date" min="${bounds.start}" max="${bounds.lastNight}" value="${escapeHtml(stay.start)}">
         </label>
         <label class="field compact">
-          <span>Bis</span>
-          <input data-field="stay-end" type="date" min="${bounds.start}" max="${bounds.end}" value="${escapeHtml(stay.end)}">
+          <span>Abreise</span>
+          <input data-field="stay-end" type="date" min="${bounds.start}" max="${bounds.checkout}" value="${escapeHtml(stay.end)}">
         </label>
         <button class="icon-button danger" type="button" data-action="remove-stay" aria-label="Aufenthalt löschen" title="Aufenthalt löschen">x</button>
       </div>
@@ -252,10 +312,10 @@
     const bounds = monthBounds(state);
 
     return `
-      <section class="panel people-panel" aria-labelledby="people-title">
+      <section class="people-section" aria-labelledby="people-title">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Personen</p>
+            <p class="eyebrow">Bewohner</p>
             <h2 id="people-title">Aufenthalte</h2>
           </div>
           <button class="primary-button" type="button" data-action="add-person">+ Person</button>
@@ -274,21 +334,21 @@
                     </label>
                     <div class="person-total">
                       <strong>${money(total.totalCents)}</strong>
-                      <span>${total.daysPresent} Tage</span>
+                      <span>${total.nightsPresent} ${nightWord(total.nightsPresent)}</span>
                     </div>
                     <button class="icon-button danger" type="button" data-action="remove-person" aria-label="Person löschen" title="Person löschen">x</button>
                   </div>
 
                   <div class="person-stats" aria-label="Aufteilung">
-                    <span>${total.soloDays} allein</span>
-                    <span>${total.sharedDays} geteilt</span>
+                    <span>${total.soloNights} allein</span>
+                    <span>${total.sharedNights} geteilt</span>
                     <span>${money(total.emptyShareCents)} Leerstand</span>
                   </div>
 
                   <div class="stays">
                     ${person.stays.length > 0
                       ? person.stays.map((stay) => renderStayRow(person, stay, bounds)).join("")
-                      : `<p class="empty-note">Keine Tage eingetragen</p>`}
+                      : `<p class="empty-note">Keine Nächte eingetragen</p>`}
                   </div>
 
                   <div class="person-actions">
@@ -312,20 +372,17 @@
     const shareText = buildShareText(calculation);
 
     return `
-      <section class="panel result-panel" aria-labelledby="result-title">
-        <div class="section-heading">
+      <section class="summary-panel" aria-labelledby="result-title">
+        <div class="summary-head">
           <div>
             <p class="eyebrow">Ergebnis</p>
-            <h2 id="result-title">Was jeder zahlt</h2>
+            <h2 id="result-title">${money(calculation.allocatedCents)} verteilt</h2>
           </div>
-          <button class="primary-button" type="button" data-action="copy">Kopieren</button>
+          <button class="primary-button copy-button" type="button" data-action="copy">Kopieren</button>
         </div>
 
-        <div class="summary-meter" aria-label="Verteilte Miete">
-          <div>
-            <strong>${money(calculation.allocatedCents)}</strong>
-            <span>von ${money(calculation.rentCents)} verteilt</span>
-          </div>
+        <div class="meter-block" aria-label="Verteilte Miete">
+          <span>von ${money(calculation.rentCents)}</span>
           <div class="meter-track">
             <span style="width: ${percent}%"></span>
           </div>
@@ -338,7 +395,7 @@
                 <div class="total-tile">
                   <span>${escapeHtml(person.name)}</span>
                   <strong>${money(person.totalCents)}</strong>
-                  <small>${person.daysPresent} Tage im Haus</small>
+                  <small>${person.nightsPresent} ${nightWord(person.nightsPresent)}</small>
                 </div>
               `,
             )
@@ -346,51 +403,59 @@
           ${calculation.unassignedCents > 0
             ? `
               <div class="total-tile warning">
-                <span>Leerstand separat</span>
+                <span>${vacancyLabel(calculation)}</span>
                 <strong>${money(calculation.unassignedCents)}</strong>
-                <small>noch nicht verteilt</small>
+                <small>nicht Personen zugeordnet</small>
               </div>
             `
             : ""}
         </div>
 
-        <label class="field share-field">
-          <span>Text zum Teilen</span>
-          <textarea readonly rows="7">${escapeHtml(shareText)}</textarea>
-        </label>
+        <details class="share-details">
+          <summary>Text zum Teilen</summary>
+          <label class="field share-field">
+            <span>Zusammenfassung</span>
+            <textarea readonly rows="6">${escapeHtml(shareText)}</textarea>
+          </label>
+        </details>
         <p class="copy-status" aria-live="polite">${escapeHtml(copyStatus.message)}</p>
       </section>
     `;
   }
 
-  function renderDayBreakdown(calculation) {
+  function renderNightBreakdown(calculation) {
     return `
-      <section class="panel days-panel" aria-labelledby="days-title">
+      <section class="night-panel" aria-labelledby="nights-title">
         <div class="section-heading">
           <div>
             <p class="eyebrow">${escapeHtml(monthLabel())}</p>
-            <h2 id="days-title">Tage</h2>
+            <h2 id="nights-title">Nachtplan</h2>
           </div>
         </div>
 
-        <div class="day-list">
-          ${calculation.dayRows
-            .map((day) => {
-              const occupantText = day.occupants.length
-                ? day.occupants.map((person) => person.name).join(", ")
+        <div class="night-list">
+          ${calculation.nightRows
+            .map((night) => {
+              const occupantText = night.occupants.length
+                ? night.occupants.map((person) => person.name).join(", ")
                 : "Leer";
-              const shareText = day.shares.length
-                ? day.shares.map((share) => `${share.name}: ${money(share.cents)}`).join(" | ")
-                : `Separat: ${money(day.unassignedCents)}`;
+              const shareText = night.shares.length
+                ? night.shares
+                    .map((share) => `${share.name}: ${money(share.cents)}`)
+                    .join(" | ")
+                : `Separat: ${money(night.unassignedCents)}`;
 
               return `
-                <div class="day-row ${day.isEmpty ? "is-empty" : ""}">
-                  <time datetime="${day.date}">${day.dayOfMonth}</time>
+                <div class="night-row ${night.isEmpty ? "is-empty" : ""}">
+                  <time datetime="${night.date}">
+                    <span>${night.nightOfMonth}</span>
+                    <small>${escapeHtml(dateLabel(night.date))}</small>
+                  </time>
                   <div>
                     <strong>${escapeHtml(occupantText)}</strong>
                     <span>${escapeHtml(shareText)}</span>
                   </div>
-                  <small>${money(day.dayRentCents)}</small>
+                  <small>${money(night.nightRentCents)}</small>
                 </div>
               `;
             })
@@ -401,27 +466,23 @@
   }
 
   function render() {
-    const calculation = calculateRentShare(state);
-    root.innerHTML = `
-      <header class="app-header">
-        <div>
-          <p class="eyebrow">House Split</p>
-          <h1>Hauskosten teilen</h1>
-        </div>
-        <div class="header-total">
-          <span>${escapeHtml(monthLabel())}</span>
-          <strong>${money(calculation.rentCents)}</strong>
-        </div>
-      </header>
+    const calculation = calculateRentShare({
+      ...state,
+      emptyNightPolicy: state.emptyNightPolicy,
+    });
 
-      <main class="layout">
-        <div class="left-column">
-          ${renderControls()}
-          ${renderPeople(calculation)}
-        </div>
-        <div class="right-column">
-          ${renderSummary(calculation)}
-          ${renderDayBreakdown(calculation)}
+    root.innerHTML = `
+      ${renderHero(calculation)}
+      <main>
+        ${renderSummary(calculation)}
+        <div class="workspace">
+          <div class="workspace-main">
+            ${renderControls()}
+            ${renderPeople(calculation)}
+          </div>
+          <div class="workspace-side">
+            ${renderNightBreakdown(calculation)}
+          </div>
         </div>
       </main>
     `;
@@ -450,8 +511,8 @@
       return true;
     }
 
-    if (field === "emptyDayPolicy") {
-      state.emptyDayPolicy = target.value;
+    if (field === "emptyNightPolicy") {
+      state.emptyNightPolicy = target.value;
       return true;
     }
 
@@ -468,11 +529,17 @@
 
     if (field === "stay-start" && stay) {
       stay.start = target.value;
+      if (stay.end && parseISODate(stay.end) <= parseISODate(stay.start)) {
+        stay.end = addDaysISO(stay.start, 1);
+      }
       return true;
     }
 
     if (field === "stay-end" && stay) {
       stay.end = target.value;
+      if (stay.start && parseISODate(stay.end) <= parseISODate(stay.start)) {
+        stay.end = addDaysISO(stay.start, 1);
+      }
       return true;
     }
 
@@ -496,13 +563,13 @@
     person.stays.push({
       id: createId("stay"),
       start: bounds.start,
-      end: bounds.end,
+      end: bounds.checkout,
     });
   }
 
   function fullMonth(person) {
     const bounds = monthBounds(state);
-    person.stays = [{ id: createId("stay"), start: bounds.start, end: bounds.end }];
+    person.stays = [{ id: createId("stay"), start: bounds.start, end: bounds.checkout }];
   }
 
   function removeStay(person, stayId) {
@@ -510,7 +577,10 @@
   }
 
   async function copyShareText() {
-    const calculation = calculateRentShare(state);
+    const calculation = calculateRentShare({
+      ...state,
+      emptyNightPolicy: state.emptyNightPolicy,
+    });
     const text = buildShareText(calculation);
 
     try {

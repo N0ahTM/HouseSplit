@@ -9,7 +9,7 @@ The following data is stored in the browser's `localStorage`:
 - monthly rent;
 - selected month and currency;
 - people names;
-- stay date ranges;
+- arrival and checkout date ranges;
 - vacancy setting.
 
 ## Network Use

@@ -4,11 +4,56 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#0f766e">
-    <title>Hauskosten teilen</title>
+    <meta name="color-scheme" content="light">
+    <meta
+      name="description"
+      content="HouseSplit teilt Monatsmiete fair nach Nächten, Personen im Haus und Leerstand. Installierbare PWA für iPhone und Android."
+    >
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://n0ahtm.github.io/HouseSplit/">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="HouseSplit">
+    <meta property="og:title" content="HouseSplit - Miete fair nach Nächten teilen">
+    <meta
+      property="og:description"
+      content="Mobile PWA für WG, Ferienhaus und Freunde: Monatsmiete nach Anreise, Abreise, Nächten und Leerstand berechnen."
+    >
+    <meta property="og:url" content="https://n0ahtm.github.io/HouseSplit/">
+    <meta property="og:image" content="https://n0ahtm.github.io/HouseSplit/docs/assets/repository-open-graph.jpg">
+    <meta property="og:image:alt" content="HouseSplit mobile rent sharing calculator preview">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="HouseSplit - Miete fair nach Nächten teilen">
+    <meta
+      name="twitter:description"
+      content="Monatsmiete nach Nächten, Anwesenheit und Leerstand teilen. Installierbare PWA für Handy-Browser."
+    >
+    <meta name="twitter:image" content="https://n0ahtm.github.io/HouseSplit/docs/assets/repository-open-graph.jpg">
+
+    <title>HouseSplit - Miete fair nach Nächten teilen</title>
     <link rel="manifest" href="manifest.webmanifest">
-    <link rel="stylesheet" href="styles.css">
-    <script src="calc.js" defer></script>
-    <script src="app.js" defer></script>
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <link rel="stylesheet" href="styles.css?v=20260623-night">
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "HouseSplit",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "iOS, Android, Windows, macOS",
+        "url": "https://n0ahtm.github.io/HouseSplit/",
+        "description": "HouseSplit berechnet Monatsmiete nach Nächten, Anwesenheit und Leerstand.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      }
+    </script>
+    <script src="calc.js?v=20260623-night" defer></script>
+    <script src="app.js?v=20260623-night" defer></script>
   </head>
   <body>
     <div id="app" class="app-shell">

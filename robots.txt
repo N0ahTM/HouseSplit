@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://n0ahtm.github.io/HouseSplit/sitemap.xml
