@@ -1,0 +1,6 @@
+hauskosten-teilen-offline.html
+hauskosten-teilen-offline.zip
+*.log
+.DS_Store
+Thumbs.db
+node_modules/

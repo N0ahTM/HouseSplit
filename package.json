@@ -1,0 +1,18 @@
+{
+  "name": "house-split",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mobile-first rent sharing calculator for housemates.",
+  "scripts": {
+    "test": "node tests/calc.test.js",
+    "check": "node --check app.js && node --check calc.js && node --check service-worker.js"
+  },
+  "keywords": [
+    "rent",
+    "roommates",
+    "pwa",
+    "github-pages",
+    "javascript"
+  ],
+  "license": "MIT"
+}
