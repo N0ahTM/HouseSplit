@@ -1,4 +1,5 @@
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-live-0f766e?logo=githubpages&logoColor=white)](https://n0ahtm.github.io/HouseSplit/)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/N0ahTM/HouseSplit)](https://github.com/N0ahTM/HouseSplit/releases/latest)
 [![License](https://img.shields.io/github/license/N0ahTM/HouseSplit)](LICENSE)
 [![JavaScript](https://img.shields.io/badge/JavaScript-static-f7df1e?logo=javascript&logoColor=111)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 
