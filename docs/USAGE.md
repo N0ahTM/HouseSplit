@@ -34,4 +34,4 @@ Data is saved locally in the browser that opened the app.
 
 Arrival dates count as occupied nights. Checkout dates do not count.
 
-On phones, use the bottom tabs to switch between the result, input, and night plan sections.
+On phones, the first screen focuses on the result. Use the bottom tabs to switch between result, input, and night plan.

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.0
+
+- Refined the frontend using the GitHub `ui-ux-pro-max-skill` design guidance.
+- Added a clearer result-first hierarchy, compact mobile facts, and visible night-counting rule.
+- Improved person cards with stronger identity, balance, and state structure.
+- Added a skip link and strengthened accessibility, focus, motion, and touch-target behavior.
+- Refreshed cache-busted PWA assets and offline download files.
+
 ## 1.2.0
 
 - Added a mobile bottom tab bar for Ergebnis, Eingabe, and Nachtplan.

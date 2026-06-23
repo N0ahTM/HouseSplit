@@ -185,6 +185,11 @@
     return count === 1 ? "Nacht" : "Nächte";
   }
 
+  function personInitial(name) {
+    const trimmed = typeof name === "string" ? name.trim() : "";
+    return trimmed ? trimmed.slice(0, 1).toUpperCase() : "?";
+  }
+
   function vacancyLabel(calculation) {
     return calculation.emptyNightPolicy === "split_all"
       ? "Leerstand verteilt"
@@ -256,6 +261,7 @@
         <div class="brand-block">
           <p class="eyebrow">HouseSplit</p>
           <h1>Miete nach Nächten teilen</h1>
+          <p class="hero-lede">Anreise zählt als Nacht. Abreise zählt nicht.</p>
         </div>
         <div class="hero-facts" aria-label="Monatsübersicht">
           <div>
@@ -282,6 +288,7 @@
           <div>
             <p class="eyebrow">Setup</p>
             <h2 id="settings-title">Monatsdaten</h2>
+            <p class="section-note">Monat, Miete und Leerstand gelten für die komplette Abrechnung.</p>
           </div>
           <button class="ghost-button" type="button" data-action="reset">Zurücksetzen</button>
         </div>
@@ -332,7 +339,7 @@
           <span>Abreise</span>
           <input data-field="stay-end" type="date" min="${bounds.start}" max="${bounds.checkout}" value="${escapeHtml(stay.end)}">
         </label>
-        <button class="icon-button danger" type="button" data-action="remove-stay" aria-label="Aufenthalt löschen" title="Aufenthalt löschen">x</button>
+        <button class="icon-button danger" type="button" data-action="remove-stay" aria-label="Aufenthalt löschen" title="Aufenthalt löschen">×</button>
       </div>
     `;
   }
@@ -358,15 +365,18 @@
               return `
                 <article class="person-card" data-person-id="${escapeHtml(person.id)}">
                   <div class="person-topline">
-                    <label class="field name-field">
-                      <span>Name</span>
-                      <input data-field="person-name" type="text" value="${escapeHtml(person.name)}">
-                    </label>
+                    <div class="person-identity">
+                      <span class="person-avatar" aria-hidden="true">${escapeHtml(personInitial(person.name))}</span>
+                      <label class="field name-field">
+                        <span>Name</span>
+                        <input data-field="person-name" type="text" value="${escapeHtml(person.name)}">
+                      </label>
+                    </div>
                     <div class="person-total">
                       <strong>${money(total.totalCents)}</strong>
                       <span>${total.nightsPresent} ${nightWord(total.nightsPresent)}</span>
                     </div>
-                    <button class="icon-button danger" type="button" data-action="remove-person" aria-label="Person löschen" title="Person löschen">x</button>
+                    <button class="icon-button danger" type="button" data-action="remove-person" aria-label="${escapeHtml(person.name)} löschen" title="Person löschen">×</button>
                   </div>
 
                   <div class="person-stats" aria-label="Aufteilung">
@@ -406,14 +416,18 @@
         <div class="summary-head">
           <div>
             <p class="eyebrow">Ergebnis</p>
-            <h2 id="result-title">${money(calculation.allocatedCents)} verteilt</h2>
+            <h2 id="result-title">
+              ${money(calculation.allocatedCents)}
+              <span>verteilt</span>
+            </h2>
+            <p class="summary-rule">${calculation.monthNights} ${nightWord(calculation.monthNights)} · ${vacancyLabel(calculation)}</p>
           </div>
           <button class="primary-button copy-button" type="button" data-action="copy">Kopieren</button>
         </div>
 
         <div class="meter-block" aria-label="Verteilte Miete">
           <span>von ${money(calculation.rentCents)}</span>
-          <div class="meter-track">
+          <div class="meter-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}">
             <span style="width: ${percent}%"></span>
           </div>
         </div>
@@ -423,7 +437,10 @@
             .map(
               (person) => `
                 <div class="total-tile">
-                  <span>${escapeHtml(person.name)}</span>
+                  <div class="total-tile-head">
+                    <span class="person-avatar small" aria-hidden="true">${escapeHtml(personInitial(person.name))}</span>
+                    <span>${escapeHtml(person.name)}</span>
+                  </div>
                   <strong>${money(person.totalCents)}</strong>
                   <small>${person.nightsPresent} ${nightWord(person.nightsPresent)}</small>
                 </div>
@@ -454,12 +471,17 @@
   }
 
   function renderNightBreakdown(calculation) {
+    const emptyNightCount = calculation.nightRows.filter((night) => night.isEmpty).length;
+    const occupiedNightCount = calculation.monthNights - emptyNightCount;
+    const averageNightRent = calculation.nightRows[0] ? calculation.nightRows[0].nightRentCents : 0;
+
     return `
       <section id="plan" class="night-panel app-section" aria-labelledby="nights-title">
         <div class="section-heading">
           <div>
             <p class="eyebrow">${escapeHtml(monthLabel())}</p>
             <h2 id="nights-title">Nachtplan</h2>
+            <p class="section-note">${occupiedNightCount} belegt · ${emptyNightCount} leer · ca. ${money(averageNightRent)} pro Nacht</p>
           </div>
         </div>
 
@@ -503,7 +525,7 @@
 
     root.innerHTML = `
       ${renderHero(calculation)}
-      <main>
+      <main id="main-content">
         ${renderSummary(calculation)}
         <div id="entry" class="workspace app-section">
           <div class="workspace-main">
