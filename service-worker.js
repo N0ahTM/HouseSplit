@@ -1,12 +1,15 @@
-const CACHE_NAME = "house-share-calculator-v8";
+const CACHE_NAME = "house-share-calculator-v10";
 const ASSETS = [
   "./",
   "./index.html",
-  "./styles.css?v=20260623-night",
-  "./calc.js?v=20260623-night",
-  "./app.js?v=20260623-night",
+  "./styles.css?v=20260623-tabs2",
+  "./calc.js?v=20260623-tabs2",
+  "./app.js?v=20260623-tabs2",
   "./manifest.webmanifest",
   "./icon.svg",
+  "./docs/assets/icon-192.png",
+  "./docs/assets/icon-512.png",
+  "./docs/assets/apple-touch-icon.png",
   "./docs/assets/mobile-preview.png",
   "./docs/assets/repository-open-graph.jpg",
 ];

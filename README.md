@@ -33,6 +33,7 @@ On iPhone or Android, add the site to your home screen to use it like a small ap
 
 - Mobile-first interface for iOS and Android browsers.
 - Installable PWA when opened from the GitHub Pages HTTPS URL.
+- Mobile bottom tabs for jumping between result, input, and night plan.
 - Per-person stay ranges with multiple ranges per person.
 - Nightly rent splitting by actual occupancy.
 - Vacancy handling: show separately or distribute across all people.

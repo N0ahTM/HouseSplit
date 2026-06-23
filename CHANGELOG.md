@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0
+
+- Added a mobile bottom tab bar for Ergebnis, Eingabe, and Nachtplan.
+- Added active tab state while scrolling between app sections.
+- Improved mobile section spacing so fixed navigation does not cover content.
+- Added PNG install icons, corrected screenshot metadata, and removed the forced portrait orientation.
+- Refreshed PWA assets and offline download files.
+
 ## 1.1.0
 
 - Changed the calculation model from calendar days to nights.

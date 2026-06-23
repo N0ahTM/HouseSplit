@@ -14,6 +14,7 @@
   const STORAGE_KEY = "house-share-calculator:nights:v2";
   const root = document.querySelector("#app");
   const copyStatus = { message: "", timeout: null };
+  let tabSyncLockedUntil = 0;
 
   function createId(prefix) {
     if (window.crypto && typeof window.crypto.randomUUID === "function") {
@@ -220,6 +221,35 @@
     return new Map(calculation.totals.map((person) => [person.id, person]));
   }
 
+  function updateBottomTabs(activeId) {
+    document.querySelectorAll(".bottom-tabs a").forEach((link) => {
+      const isActive = link.getAttribute("href") === `#${activeId}`;
+      link.classList.toggle("is-active", isActive);
+      if (isActive) {
+        link.setAttribute("aria-current", "page");
+      } else {
+        link.removeAttribute("aria-current");
+      }
+    });
+  }
+
+  function syncBottomTabs() {
+    if (Date.now() < tabSyncLockedUntil) return;
+
+    const sections = ["result", "entry", "plan"]
+      .map((id) => document.getElementById(id))
+      .filter(Boolean);
+    if (!sections.length) return;
+
+    const probe = window.scrollY + Math.round(window.innerHeight * 0.38);
+    const current =
+      sections
+        .slice()
+        .reverse()
+        .find((section) => section.offsetTop <= probe) || sections[0];
+    updateBottomTabs(current.id);
+  }
+
   function renderHero(calculation) {
     return `
       <header class="app-hero">
@@ -372,7 +402,7 @@
     const shareText = buildShareText(calculation);
 
     return `
-      <section class="summary-panel" aria-labelledby="result-title">
+      <section id="result" class="summary-panel app-section" aria-labelledby="result-title">
         <div class="summary-head">
           <div>
             <p class="eyebrow">Ergebnis</p>
@@ -425,7 +455,7 @@
 
   function renderNightBreakdown(calculation) {
     return `
-      <section class="night-panel" aria-labelledby="nights-title">
+      <section id="plan" class="night-panel app-section" aria-labelledby="nights-title">
         <div class="section-heading">
           <div>
             <p class="eyebrow">${escapeHtml(monthLabel())}</p>
@@ -475,7 +505,7 @@
       ${renderHero(calculation)}
       <main>
         ${renderSummary(calculation)}
-        <div class="workspace">
+        <div id="entry" class="workspace app-section">
           <div class="workspace-main">
             ${renderControls()}
             ${renderPeople(calculation)}
@@ -485,7 +515,22 @@
           </div>
         </div>
       </main>
+      <nav class="bottom-tabs" aria-label="App-Bereiche">
+        <a class="is-active" href="#result" aria-current="page">
+          <span class="tab-icon tab-result" aria-hidden="true"></span>
+          <span>Ergebnis</span>
+        </a>
+        <a href="#entry">
+          <span class="tab-icon tab-entry" aria-hidden="true"></span>
+          <span>Eingabe</span>
+        </a>
+        <a href="#plan">
+          <span class="tab-icon tab-plan" aria-hidden="true"></span>
+          <span>Plan</span>
+        </a>
+      </nav>
     `;
+    syncBottomTabs();
   }
 
   function updateField(target) {
@@ -611,6 +656,34 @@
   });
 
   root.addEventListener("click", (event) => {
+    const tabLink = event.target.closest(".bottom-tabs a[href^='#']");
+    if (tabLink) {
+      event.preventDefault();
+
+      const targetId = tabLink.getAttribute("href").slice(1);
+      const target = document.getElementById(targetId);
+      if (!target) return;
+
+      tabSyncLockedUntil = Date.now() + 700;
+      updateBottomTabs(targetId);
+      if (window.location.hash !== `#${targetId}`) {
+        window.history.pushState(null, "", `#${targetId}`);
+      }
+
+      const scrollMarginTop = Number.parseFloat(window.getComputedStyle(target).scrollMarginTop) || 0;
+      const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - scrollMarginTop);
+      window.scrollTo({
+        top,
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      });
+
+      window.setTimeout(() => {
+        tabSyncLockedUntil = 0;
+        updateBottomTabs(targetId);
+      }, 520);
+      return;
+    }
+
     const button = event.target.closest("button[data-action]");
     if (!button) return;
 
@@ -641,6 +714,12 @@
       navigator.serviceWorker.register("./service-worker.js").catch(() => {});
     });
   }
+
+  window.addEventListener("scroll", syncBottomTabs, { passive: true });
+  window.addEventListener("hashchange", () => {
+    const activeId = window.location.hash.replace("#", "");
+    if (activeId) updateBottomTabs(activeId);
+  });
 
   render();
 })();
