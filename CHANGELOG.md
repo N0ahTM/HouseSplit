@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.4.0
+
+- Reworked the frontend into a more native-app style interface with a sticky top bar, safer mobile spacing, and clearer desktop grids.
+- Moved setup, person editing, adding people, and share text into large mobile-friendly sheets.
+- Added local saved-person suggestions for recurring names.
+- Added toast feedback with undo for destructive person and stay deletes.
+- Added online Frankfurter API currency conversion using the `ECB` provider for rents entered in foreign currencies.
+- Added a browser install prompt sheet with native PWA install support where available and platform-specific guidance elsewhere.
+- Updated PWA theme colors and cache-busted static assets.
+
 ## 1.3.0
 
 - Refined the frontend using the GitHub `ui-ux-pro-max-skill` design guidance.

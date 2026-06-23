@@ -16,6 +16,8 @@ The following data is stored in the browser's `localStorage`:
 
 When opened from GitHub Pages, the browser downloads the static app files from GitHub Pages. After that, the service worker can cache the app for offline use.
 
+When you use currency conversion, the browser requests the current reference rate from the Frankfurter API with the `ECB` provider. That request includes only the source and target currency codes.
+
 The app does not upload rent calculations, names, or stay dates.
 
 ## Clearing Data

@@ -33,13 +33,16 @@ On iPhone or Android, add the site to your home screen to use it like a small ap
 
 - Mobile-first interface for iOS and Android browsers.
 - Installable PWA when opened from the GitHub Pages HTTPS URL.
-- Mobile bottom tabs for jumping between result, input, and night plan.
-- Refined app-style frontend with compact result, input, and night-plan sections.
+- Install prompt sheet for browser users on supported desktop and mobile browsers.
+- Native-app style top bar, safe-area spacing, bottom tabs, and mobile sheets.
+- Compact result, setup, person, and night-plan sections.
+- Local saved-person suggestions for recurring housemates.
+- Online ECB reference-rate conversion through the Frankfurter API.
 - Per-person stay ranges with multiple ranges per person.
 - Nightly rent splitting by actual occupancy.
 - Vacancy handling: show separately or distribute across all people.
 - Exact cent-based rounding so totals remain consistent.
-- Shareable text summary for messages.
+- Copyable and system-shareable text summary for messages.
 - Local browser storage only.
 - Offline support after the first hosted load.
 - Single-file offline copy can be generated locally for file sharing.
