@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.0
+
+- Added per-person payment currencies with live Frankfurter/ECB conversion display.
+- Made the mobile layout more compact by hiding the hero on small screens and flattening nested result/person cards.
+- Refreshed cache-busted PWA assets for the compact payment-currency UI.
+
 ## 1.4.0
 
 - Reworked the frontend into a more native-app style interface with a sticky top bar, safer mobile spacing, and clearer desktop grids.

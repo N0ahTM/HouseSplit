@@ -14,6 +14,7 @@
   const STORAGE_KEY = "house-share-calculator:nights:v2";
   const PEOPLE_LIBRARY_KEY = "house-share-calculator:people-library:v1";
   const ECB_RATES_STORAGE_KEY = "house-share-calculator:frankfurter-ecb-rate:v2";
+  const ECB_RATE_SET_STORAGE_KEY = "house-share-calculator:frankfurter-ecb-rates:v3";
   const INSTALL_PROMO_KEY = "house-share-calculator:install-promo:v1";
   const FRANKFURTER_RATES_URL = "https://api.frankfurter.dev/v2/rates";
   const FRANKFURTER_PROVIDER = "ECB";
@@ -60,10 +61,15 @@
   const sheetState = { type: null, personId: null };
   const fxState = {
     rates: null,
+    peopleRates: null,
     targetCurrency: "",
     status: "",
+    peopleStatus: "",
     isLoading: false,
+    peopleIsLoading: false,
+    peopleRequestKey: "",
   };
+  let personRateTimer = null;
   let installPrompt = null;
   let installPromoTimer = null;
   let isOnline = navigator.onLine;
@@ -84,6 +90,12 @@
       year: now.getFullYear(),
       month: now.getMonth() + 1,
     };
+  }
+
+  function normalizeCurrencyCode(value, fallback) {
+    const code = typeof value === "string" ? value.trim().toUpperCase() : "";
+    if (CURRENCY_CODES.includes(code)) return code;
+    return CURRENCY_CODES.includes(fallback) ? fallback : "USD";
   }
 
   function monthValue(state) {
@@ -113,10 +125,11 @@
         {
           id: createId("person"),
           name: "Person 1",
+          payCurrency: "USD",
           stays: [{ id: createId("stay"), start: bounds.start, end: bounds.checkout }],
         },
-        { id: createId("person"), name: "Person 2", stays: [] },
-        { id: createId("person"), name: "Person 3", stays: [] },
+        { id: createId("person"), name: "Person 2", payCurrency: "USD", stays: [] },
+        { id: createId("person"), name: "Person 3", payCurrency: "USD", stays: [] },
       ],
     };
   }
@@ -149,7 +162,7 @@
 
     return {
       rent: Number.isFinite(Number(state.rent)) ? Number(state.rent) : fallback.rent,
-      currency: typeof state.currency === "string" ? state.currency : "USD",
+      currency: normalizeCurrencyCode(state.currency, "USD"),
       year: Math.min(Math.max(year, 1900), 2200),
       month: Math.min(Math.max(month, 1), 12),
       emptyNightPolicy,
@@ -159,6 +172,7 @@
           typeof person.name === "string" && person.name.trim()
             ? person.name
             : `Person ${personIndex + 1}`,
+        payCurrency: normalizeCurrencyCode(person.payCurrency, normalizeCurrencyCode(state.currency, "USD")),
         stays: Array.isArray(person.stays) ? person.stays.map(normalizeStay) : [],
       })),
     };
@@ -190,6 +204,7 @@
   let state = loadState();
   let peopleLibrary = loadPeopleLibrary();
   fxState.rates = loadCachedEcbRates();
+  fxState.peopleRates = loadCachedFrankfurterRates(state.currency);
   fxState.targetCurrency = state.currency === "EUR" ? "USD" : "EUR";
 
   function savePeopleLibrary() {
@@ -221,6 +236,26 @@
     }
   }
 
+  function loadCachedFrankfurterRates(sourceCurrency) {
+    try {
+      const raw = window.localStorage.getItem(ECB_RATE_SET_STORAGE_KEY);
+      const cached = raw ? JSON.parse(raw) : null;
+      if (!cached || typeof cached.date !== "string" || !cached.rates) return null;
+      if (sourceCurrency && cached.base !== normalizeCurrencyCode(sourceCurrency, state.currency)) return null;
+      return cached;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function saveFrankfurterRates(rates) {
+    try {
+      window.localStorage.setItem(ECB_RATE_SET_STORAGE_KEY, JSON.stringify(rates));
+    } catch (error) {
+      // Exchange rates can be fetched again; caching is only a convenience.
+    }
+  }
+
   function todayISODate() {
     return new Date().toISOString().slice(0, 10);
   }
@@ -229,6 +264,14 @@
     const url = new URL(FRANKFURTER_RATES_URL);
     url.searchParams.set("base", sourceCurrency);
     url.searchParams.set("quotes", targetCurrency);
+    url.searchParams.set("providers", FRANKFURTER_PROVIDER);
+    return url.toString();
+  }
+
+  function frankfurterRatesUrl(sourceCurrency, targetCurrencies) {
+    const url = new URL(FRANKFURTER_RATES_URL);
+    url.searchParams.set("base", sourceCurrency);
+    url.searchParams.set("quotes", targetCurrencies.join(","));
     url.searchParams.set("providers", FRANKFURTER_PROVIDER);
     return url.toString();
   }
@@ -262,6 +305,38 @@
     };
   }
 
+  function normalizeFrankfurterRatesPayload(payload, sourceCurrency, targetCurrencies) {
+    const source = sourceCurrency.toUpperCase();
+    const targets = targetCurrencies.map((currency) => currency.toUpperCase());
+    const requested = new Set(targets);
+    const rows = Array.isArray(payload) ? payload : [payload];
+    const rates = { [source]: 1 };
+    let date = "";
+
+    rows.forEach((entry) => {
+      const base = String(entry && entry.base).toUpperCase();
+      const quote = String(entry && entry.quote).toUpperCase();
+      const rate = Number(entry && entry.rate);
+      if (base === source && requested.has(quote) && Number.isFinite(rate) && rate > 0) {
+        rates[quote] = rate;
+        if (!date && typeof entry.date === "string") date = entry.date;
+      }
+    });
+
+    if (!date || Object.keys(rates).length <= 1) {
+      throw new Error("Frankfurter response did not contain usable ECB rates");
+    }
+
+    return {
+      date,
+      base: source,
+      provider: FRANKFURTER_PROVIDER,
+      rates,
+      source: frankfurterRatesUrl(source, targets),
+      fetchedAt: new Date().toISOString(),
+    };
+  }
+
   function formatRateDate(value) {
     const dayNumber = parseISODate(value);
     if (dayNumber === null) return value || "";
@@ -290,6 +365,77 @@
     const toRate = rateFor(toCurrency, rates);
     if (!fromRate || !toRate) return null;
     return Math.round((Number(amount) / fromRate) * toRate * 100) / 100;
+  }
+
+  function moneyInCurrency(cents, currency) {
+    return formatMoney(cents, currency, "de-DE");
+  }
+
+  function personPayCurrency(person) {
+    return normalizeCurrencyCode(person && person.payCurrency, state.currency);
+  }
+
+  function requiredPersonCurrencies() {
+    const base = normalizeCurrencyCode(state.currency, "USD");
+    return [
+      ...new Set(
+        state.people
+          .map((person) => personPayCurrency(person))
+          .filter((currency) => currency !== base),
+      ),
+    ].sort();
+  }
+
+  function ratesCoverTargets(rates, sourceCurrency, targetCurrencies) {
+    const source = normalizeCurrencyCode(sourceCurrency, state.currency);
+    return Boolean(
+      rates &&
+        rates.base === source &&
+        rateFor(source, rates) &&
+        targetCurrencies.every((currency) => rateFor(currency, rates)),
+    );
+  }
+
+  function convertPersonCents(cents, targetCurrency) {
+    const source = normalizeCurrencyCode(state.currency, "USD");
+    const target = normalizeCurrencyCode(targetCurrency, source);
+    if (target === source) return cents;
+    if (!ratesCoverTargets(fxState.peopleRates, source, [target])) return null;
+    const rate = rateFor(target, fxState.peopleRates);
+    return Math.round(cents * rate);
+  }
+
+  function personPaymentInfo(person, totalCents) {
+    const currency = personPayCurrency(person);
+    const baseText = money(totalCents);
+    if (currency === state.currency) {
+      return {
+        currency,
+        baseText,
+        convertedText: "",
+        statusText: `Zahlt in ${currency}`,
+        isConverted: false,
+      };
+    }
+
+    const convertedCents = convertPersonCents(totalCents, currency);
+    if (convertedCents !== null) {
+      return {
+        currency,
+        baseText,
+        convertedText: moneyInCurrency(convertedCents, currency),
+        statusText: `Zahlt in ${currency}`,
+        isConverted: true,
+      };
+    }
+
+    return {
+      currency,
+      baseText,
+      convertedText: fxState.peopleIsLoading ? "Kurs lädt..." : `Kurs für ${currency} fehlt`,
+      statusText: `Zahlt in ${currency}`,
+      isConverted: false,
+    };
   }
 
   function isRateForPair(rates, sourceCurrency, targetCurrency) {
@@ -348,6 +494,60 @@
       render();
       focusSheet();
     }
+  }
+
+  async function loadPersonPaymentRates() {
+    const source = normalizeCurrencyCode(state.currency, "USD");
+    const targets = requiredPersonCurrencies();
+    if (!targets.length || ratesCoverTargets(fxState.peopleRates, source, targets)) return fxState.peopleRates;
+
+    const cached = loadCachedFrankfurterRates(source);
+    if (ratesCoverTargets(cached, source, targets)) {
+      fxState.peopleRates = cached;
+      return cached;
+    }
+
+    const requestKey = `${source}:${targets.join(",")}`;
+    if (fxState.peopleIsLoading && fxState.peopleRequestKey === requestKey) return null;
+
+    fxState.peopleIsLoading = true;
+    fxState.peopleRequestKey = requestKey;
+    fxState.peopleStatus = "Zahlungswährungen werden geladen...";
+    render();
+
+    try {
+      const response = await fetch(frankfurterRatesUrl(source, targets), { cache: "no-store" });
+      if (!response.ok) throw new Error(`Frankfurter request failed with ${response.status}`);
+      const parsed = normalizeFrankfurterRatesPayload(await response.json(), source, targets);
+      fxState.peopleRates = parsed;
+      fxState.peopleStatus = `Zahlungswährungen vom ${formatRateDate(parsed.date)} geladen.`;
+      saveFrankfurterRates(parsed);
+      return parsed;
+    } catch (error) {
+      if (cached) {
+        fxState.peopleRates = cached;
+        fxState.peopleStatus = `Offline genutzt: letzter Kurs vom ${formatRateDate(cached.date)}.`;
+        return cached;
+      }
+      fxState.peopleStatus = "Zahlungswährungen konnten nicht geladen werden.";
+      return null;
+    } finally {
+      fxState.peopleIsLoading = false;
+      fxState.peopleRequestKey = "";
+      render();
+    }
+  }
+
+  function schedulePersonRateLoad() {
+    if (personRateTimer) window.clearTimeout(personRateTimer);
+    personRateTimer = window.setTimeout(() => {
+      personRateTimer = null;
+      const source = normalizeCurrencyCode(state.currency, "USD");
+      const targets = requiredPersonCurrencies();
+      if (!targets.length || fxState.peopleIsLoading) return;
+      if (ratesCoverTargets(fxState.peopleRates, source, targets)) return;
+      loadPersonPaymentRates();
+    }, 0);
   }
 
   async function convertWithEcbRates() {
@@ -507,7 +707,7 @@
   }
 
   function money(cents) {
-    return formatMoney(cents, state.currency, "de-DE");
+    return moneyInCurrency(cents, state.currency);
   }
 
   function nightWord(count) {
@@ -569,10 +769,15 @@
       "",
       "Anteile:",
       ...calculation.totals.map((person) => {
+        const statePerson = findPerson(person.id);
+        const payment = personPaymentInfo(statePerson, person.totalCents);
         const parts = [
           `${person.name}: ${money(person.totalCents)}`,
           `${person.nightsPresent} ${nightWord(person.nightsPresent)}`,
         ];
+        if (payment.convertedText && payment.isConverted) {
+          parts.push(`Zahlt ${payment.convertedText}`);
+        }
         if (person.emptyShareCents > 0) {
           parts.push(`${money(person.emptyShareCents)} Leerstand`);
         }
@@ -731,6 +936,7 @@
           ${state.people
             .map((person) => {
               const total = totals.get(person.id);
+              const payment = personPaymentInfo(findPerson(person.id), total.totalCents);
               return `
                 <article class="person-card" data-person-id="${escapeHtml(person.id)}">
                   <div class="person-topline">
@@ -742,15 +948,18 @@
                       </div>
                     </div>
                     <div class="person-total">
-                      <strong>${money(total.totalCents)}</strong>
-                      <span>${total.nightsPresent} ${nightWord(total.nightsPresent)}</span>
+                      <strong>${escapeHtml(payment.convertedText || payment.baseText)}</strong>
+                      ${payment.convertedText
+                        ? `<span>${escapeHtml(payment.baseText)} Basis</span>`
+                        : `<span>${total.nightsPresent} ${nightWord(total.nightsPresent)}</span>`}
                     </div>
                   </div>
 
                   <div class="person-stats" aria-label="Aufteilung">
+                    <span>${escapeHtml(payment.statusText)}</span>
                     <span>${total.soloNights} allein</span>
                     <span>${total.sharedNights} geteilt</span>
-                    <span>${money(total.emptyShareCents)} Leerstand</span>
+                    ${total.emptyShareCents > 0 ? `<span>${money(total.emptyShareCents)} Leerstand</span>` : ""}
                   </div>
 
                   <div class="person-actions">
@@ -798,18 +1007,21 @@
 
         <div class="totals-grid">
           ${calculation.totals
-            .map(
-              (person) => `
+            .map((person) => {
+              const payment = personPaymentInfo(findPerson(person.id), person.totalCents);
+              return `
                 <div class="total-tile">
                   <div class="total-tile-head">
                     <span class="person-avatar small" aria-hidden="true">${escapeHtml(personInitial(person.name))}</span>
                     <span>${escapeHtml(person.name)}</span>
                   </div>
-                  <strong>${money(person.totalCents)}</strong>
-                  <small>${person.nightsPresent} ${nightWord(person.nightsPresent)}</small>
+                  <strong>${escapeHtml(payment.convertedText || payment.baseText)}</strong>
+                  <small>${payment.convertedText
+                    ? `${escapeHtml(payment.baseText)} Basis · ${person.nightsPresent} ${nightWord(person.nightsPresent)}`
+                    : `${person.nightsPresent} ${nightWord(person.nightsPresent)}`}</small>
                 </div>
-              `,
-            )
+              `;
+            })
             .join("")}
           ${calculation.unassignedCents > 0
             ? `
@@ -1045,18 +1257,32 @@
 
     const total = totalsById(calculation).get(person.id);
     const bounds = monthBounds(state);
+    const payment = personPaymentInfo(person, total.totalCents);
 
     return `
       ${renderSheetHeader(person.name, "Person")}
       <div class="sheet-body" data-person-id="${escapeHtml(person.id)}">
-        <label class="field">
-          <span>Name</span>
-          <input data-field="person-name" type="text" autocomplete="name" value="${escapeHtml(person.name)}">
-        </label>
+        <div class="control-grid">
+          <label class="field">
+            <span>Name</span>
+            <input data-field="person-name" type="text" autocomplete="name" value="${escapeHtml(person.name)}">
+          </label>
+
+          <label class="field">
+            <span>Zahlt in</span>
+            <select data-field="person-currency">
+              ${currencyOptions(personPayCurrency(person))}
+            </select>
+          </label>
+        </div>
 
         <div class="sheet-stat-grid">
           <div>
-            <span>Anteil</span>
+            <span>Zahlbetrag</span>
+            <strong>${escapeHtml(payment.convertedText || payment.baseText)}</strong>
+          </div>
+          <div>
+            <span>Basis</span>
             <strong>${money(total.totalCents)}</strong>
           </div>
           <div>
@@ -1072,6 +1298,10 @@
             <strong>${total.sharedNights}</strong>
           </div>
         </div>
+
+        ${personPayCurrency(person) !== state.currency
+          ? `<p class="sheet-status" aria-live="polite">${escapeHtml(payment.statusText)} · ${fxState.peopleStatus || "Livekurs wird automatisch geladen."}</p>`
+          : ""}
 
         <div class="sheet-section-head">
           <div>
@@ -1228,6 +1458,7 @@
       </nav>
     `;
     syncBottomTabs();
+    schedulePersonRateLoad();
   }
 
   function updateField(target) {
@@ -1252,6 +1483,7 @@
       state.currency = target.value;
       fxState.targetCurrency = state.currency === "EUR" ? "USD" : "EUR";
       fxState.rates = null;
+      fxState.peopleRates = loadCachedFrankfurterRates(state.currency);
       return true;
     }
 
@@ -1270,6 +1502,11 @@
 
     if (field === "person-name" && person) {
       person.name = target.value;
+      return true;
+    }
+
+    if (field === "person-currency" && person) {
+      person.payCurrency = normalizeCurrencyCode(target.value, state.currency);
       return true;
     }
 
@@ -1295,12 +1532,13 @@
     return false;
   }
 
-  function addPerson(name) {
+  function addPerson(name, payCurrency) {
     const trimmed = typeof name === "string" ? name.trim() : "";
     const nextName = trimmed || `Person ${state.people.length + 1}`;
     const person = {
       id: createId("person"),
       name: nextName,
+      payCurrency: normalizeCurrencyCode(payCurrency, state.currency),
       stays: [],
     };
 
@@ -1571,11 +1809,13 @@
     if (action === "reset") {
       const previousState = JSON.parse(JSON.stringify(state));
       state = defaultState();
+      fxState.peopleRates = loadCachedFrankfurterRates(state.currency);
       closeSheet();
       showToast("Abrechnung zurückgesetzt", {
         actionLabel: "Rückgängig",
         onAction: () => {
           state = sanitizeState(previousState);
+          fxState.peopleRates = loadCachedFrankfurterRates(state.currency);
         },
       });
     }

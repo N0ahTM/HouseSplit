@@ -38,6 +38,7 @@ On iPhone or Android, add the site to your home screen to use it like a small ap
 - Compact result, setup, person, and night-plan sections.
 - Local saved-person suggestions for recurring housemates.
 - Online ECB reference-rate conversion through the Frankfurter API.
+- Per-person payment currencies with live ECB-rate display.
 - Per-person stay ranges with multiple ranges per person.
 - Nightly rent splitting by actual occupancy.
 - Vacancy handling: show separately or distribute across all people.
