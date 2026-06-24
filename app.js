@@ -6,18 +6,23 @@
     calculateRentShare,
     daysInMonth,
     formatISODate,
+    formatISOFromDay,
     formatMoney,
     nextMonthStartISO,
     parseISODate,
   } = window.RentShareCalculator;
 
   const STORAGE_KEY = "house-share-calculator:nights:v2";
+  const APARTMENTS_STORAGE_KEY = "house-share-calculator:apartments:v1";
   const PEOPLE_LIBRARY_KEY = "house-share-calculator:people-library:v1";
   const ECB_RATES_STORAGE_KEY = "house-share-calculator:frankfurter-ecb-rate:v2";
   const ECB_RATE_SET_STORAGE_KEY = "house-share-calculator:frankfurter-ecb-rates:v3";
   const INSTALL_PROMO_KEY = "house-share-calculator:install-promo:v1";
   const FRANKFURTER_RATES_URL = "https://api.frankfurter.dev/v2/rates";
   const FRANKFURTER_PROVIDER = "ECB";
+  const MAX_APARTMENTS = 30;
+  const MAX_HISTORY_ENTRIES = 10;
+  const AUTO_HISTORY_INTERVAL_MS = 5 * 60 * 1000;
   const CURRENCY_CODES = [
     "EUR",
     "USD",
@@ -70,6 +75,9 @@
     peopleRequestKey: "",
   };
   let personRateTimer = null;
+  let resetArmedUntil = 0;
+  let deletePersonArmedId = "";
+  let deletePersonArmedUntil = 0;
   let installPrompt = null;
   let installPromoTimer = null;
   let isOnline = navigator.onLine;
@@ -98,6 +106,14 @@
     return CURRENCY_CODES.includes(fallback) ? fallback : "USD";
   }
 
+  function parseRentInput(value) {
+    const text = String(value || "").trim();
+    if (!text) return 0;
+    const normalized = text.includes(",") ? text.replace(/\./g, "").replace(",", ".") : text;
+    const amount = Number(normalized);
+    return Number.isFinite(amount) && amount > 0 ? amount : 0;
+  }
+
   function monthValue(state) {
     return `${state.year}-${String(state.month).padStart(2, "0")}`;
   }
@@ -111,11 +127,21 @@
     };
   }
 
-  function defaultState() {
+  function defaultApartmentName(index) {
+    return `Apartment ${index || 1}`;
+  }
+
+  function normalizeApartmentName(value, fallback) {
+    const text = typeof value === "string" ? value.trim() : "";
+    return text || fallback || defaultApartmentName(1);
+  }
+
+  function defaultState(apartmentName) {
     const base = currentYearMonth();
     const bounds = monthBounds(base);
 
     return {
+      apartmentName: normalizeApartmentName(apartmentName, defaultApartmentName(1)),
       rent: 2000,
       currency: "USD",
       year: base.year,
@@ -161,6 +187,7 @@
         : "unassigned";
 
     return {
+      apartmentName: normalizeApartmentName(state.apartmentName, fallback.apartmentName),
       rent: Number.isFinite(Number(state.rent)) ? Number(state.rent) : fallback.rent,
       currency: normalizeCurrencyCode(state.currency, "USD"),
       year: Math.min(Math.max(year, 1900), 2200),
@@ -178,14 +205,96 @@
     };
   }
 
-  function loadState() {
+  function loadLegacyState() {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (!raw) return defaultState();
+      if (!raw) return null;
       return sanitizeState(JSON.parse(raw));
     } catch (error) {
-      return defaultState();
+      return null;
     }
+  }
+
+  function cleanStateForApartment(value, name) {
+    const nextState = sanitizeState(value);
+    nextState.apartmentName = normalizeApartmentName(name || nextState.apartmentName, nextState.apartmentName);
+    return nextState;
+  }
+
+  function validIsoDateTime(value) {
+    return typeof value === "string" && !Number.isNaN(Date.parse(value));
+  }
+
+  function normalizeHistoryEntry(entry, apartmentName) {
+    if (!entry || typeof entry !== "object") return null;
+    return {
+      id: entry.id || createId("history"),
+      createdAt: validIsoDateTime(entry.createdAt) ? entry.createdAt : new Date().toISOString(),
+      reason: typeof entry.reason === "string" && entry.reason.trim() ? entry.reason.trim() : "Sicherung",
+      state: cleanStateForApartment(entry.state, apartmentName),
+    };
+  }
+
+  function normalizeApartment(entry, index) {
+    const fallbackName = defaultApartmentName(index + 1);
+    const sourceState = entry && entry.state ? entry.state : entry;
+    const stateSnapshot = cleanStateForApartment(sourceState, entry && entry.name ? entry.name : fallbackName);
+    const name = normalizeApartmentName(entry && entry.name, stateSnapshot.apartmentName);
+    stateSnapshot.apartmentName = name;
+
+    const history = Array.isArray(entry && entry.history)
+      ? entry.history
+          .map((historyEntry) => normalizeHistoryEntry(historyEntry, name))
+          .filter(Boolean)
+          .slice(0, MAX_HISTORY_ENTRIES)
+      : [];
+
+    return {
+      id: entry && entry.id ? String(entry.id) : createId("apartment"),
+      name,
+      createdAt: validIsoDateTime(entry && entry.createdAt) ? entry.createdAt : new Date().toISOString(),
+      updatedAt: validIsoDateTime(entry && entry.updatedAt) ? entry.updatedAt : new Date().toISOString(),
+      state: stateSnapshot,
+      history,
+    };
+  }
+
+  function loadApartmentStore() {
+    try {
+      const raw = window.localStorage.getItem(APARTMENTS_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (parsed && Array.isArray(parsed.apartments)) {
+        const apartments = parsed.apartments
+          .map(normalizeApartment)
+          .filter(Boolean)
+          .slice(0, MAX_APARTMENTS);
+        if (apartments.length) {
+          const activeId = apartments.some((apartment) => apartment.id === parsed.activeId)
+            ? parsed.activeId
+            : apartments[0].id;
+          return { activeId, apartments };
+        }
+      }
+    } catch (error) {
+      // A broken apartment store falls back to the legacy single-apartment state.
+    }
+
+    const legacyState = loadLegacyState() || defaultState(defaultApartmentName(1));
+    const firstApartment = normalizeApartment(
+      {
+        id: createId("apartment"),
+        name: legacyState.apartmentName || defaultApartmentName(1),
+        state: legacyState,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        history: [],
+      },
+      0,
+    );
+    return {
+      activeId: firstApartment.id,
+      apartments: [firstApartment],
+    };
   }
 
   function loadPeopleLibrary() {
@@ -201,11 +310,14 @@
     }
   }
 
-  let state = loadState();
+  let apartmentStore = loadApartmentStore();
+  let state = activeApartmentState();
   let peopleLibrary = loadPeopleLibrary();
   fxState.rates = loadCachedEcbRates();
   fxState.peopleRates = loadCachedFrankfurterRates(state.currency);
   fxState.targetCurrency = state.currency === "EUR" ? "USD" : "EUR";
+
+  persistApartmentStore();
 
   function savePeopleLibrary() {
     try {
@@ -438,6 +550,103 @@
     };
   }
 
+  function compactNameList(people) {
+    const names = people.map((person) => person.name).filter(Boolean);
+    if (names.length <= 2) return names.join(", ");
+    return `${names.slice(0, 2).join(", ")} +${names.length - 2}`;
+  }
+
+  function readinessState(calculation) {
+    const totals = totalsById(calculation);
+    const peopleWithoutNights = state.people.filter(
+      (person) => (totals.get(person.id) && totals.get(person.id).nightsPresent) === 0,
+    );
+    const targetCurrencies = requiredPersonCurrencies();
+    const hasMissingRates =
+      targetCurrencies.length > 0 &&
+      !ratesCoverTargets(fxState.peopleRates, state.currency, targetCurrencies);
+
+    if (calculation.rentCents <= 0) {
+      return {
+        tone: "danger",
+        title: "Miete fehlt",
+        detail: "Monatsmiete eintragen.",
+        action: "open-settings",
+        label: "Eintragen",
+      };
+    }
+
+    if (!state.people.length) {
+      return {
+        tone: "danger",
+        title: "Keine Personen",
+        detail: "Person hinzufügen.",
+        action: "open-add-person",
+        label: "Person",
+      };
+    }
+
+    if (peopleWithoutNights.length === state.people.length) {
+      return {
+        tone: "warning",
+        title: "Aufenthalte fehlen",
+        detail: "Nächte eintragen.",
+        action: "open-person",
+        personId: state.people[0].id,
+        label: "Öffnen",
+      };
+    }
+
+    if (peopleWithoutNights.length > 0) {
+      return {
+        tone: "warning",
+        title: `${peopleWithoutNights.length} ohne Nächte`,
+        detail: compactNameList(peopleWithoutNights),
+        action: "open-person",
+        personId: peopleWithoutNights[0].id,
+        label: "Prüfen",
+      };
+    }
+
+    if (calculation.unassignedCents > 0 && state.emptyNightPolicy === "unassigned") {
+      return {
+        tone: "warning",
+        title: "Leerstand offen",
+        detail: `${money(calculation.unassignedCents)} separat`,
+        action: "open-settings",
+        label: "Regeln",
+      };
+    }
+
+    if (hasMissingRates) {
+      return {
+        tone: fxState.peopleIsLoading ? "info" : "warning",
+        title: fxState.peopleIsLoading ? "Kurse laden" : "Kurse fehlen",
+        detail: `${state.currency} → ${targetCurrencies.join(", ")}`,
+        action: "refresh-person-rates",
+        label: fxState.peopleIsLoading ? "Lädt" : "Laden",
+        disabled: fxState.peopleIsLoading,
+      };
+    }
+
+    return {
+      tone: "success",
+      title: "Bereit zum Teilen",
+      detail: `${state.people.length} Personen · ${money(calculation.allocatedCents)}`,
+    };
+  }
+
+  function isShareReady(calculation) {
+    return readinessState(calculation).tone === "success";
+  }
+
+  function currentCalculation() {
+    return calculateRentShare({
+      ...state,
+      emptyNightPolicy: state.emptyNightPolicy,
+    });
+  }
+
   function isRateForPair(rates, sourceCurrency, targetCurrency) {
     return Boolean(
       rates &&
@@ -642,7 +851,85 @@
     state.people.forEach((person) => rememberPersonName(person.name));
   }
 
-  function saveState() {
+  function activeApartment() {
+    return apartmentStore.apartments.find((apartment) => apartment.id === apartmentStore.activeId) || null;
+  }
+
+  function activeApartmentState() {
+    const apartment = activeApartment();
+    return apartment ? cleanStateForApartment(apartment.state, apartment.name) : defaultState(defaultApartmentName(1));
+  }
+
+  function activeApartmentName() {
+    const apartment = activeApartment();
+    return normalizeApartmentName(state.apartmentName, apartment ? apartment.name : defaultApartmentName(1));
+  }
+
+  function persistApartmentStore() {
+    try {
+      window.localStorage.setItem(APARTMENTS_STORAGE_KEY, JSON.stringify(apartmentStore));
+    } catch (error) {
+      // The app still works in-memory when a browser blocks localStorage.
+    }
+  }
+
+  function statesEqual(left, right) {
+    return JSON.stringify(cleanStateForApartment(left, left && left.apartmentName)) ===
+      JSON.stringify(cleanStateForApartment(right, right && right.apartmentName));
+  }
+
+  function addApartmentHistory(apartment, snapshotState, reason, options) {
+    if (!apartment || !snapshotState) return false;
+    const force = options && options.force;
+    const snapshot = cleanStateForApartment(snapshotState, apartment.name);
+    const latest = apartment.history && apartment.history[0];
+
+    if (!force && latest && statesEqual(latest.state, snapshot)) return false;
+    if (!force && !reason && latest && Date.now() - Date.parse(latest.createdAt) < AUTO_HISTORY_INTERVAL_MS) {
+      return false;
+    }
+
+    apartment.history = [
+      {
+        id: createId("history"),
+        createdAt: new Date().toISOString(),
+        reason: reason || "Automatische Sicherung",
+        state: snapshot,
+      },
+      ...(Array.isArray(apartment.history) ? apartment.history : []),
+    ].slice(0, MAX_HISTORY_ENTRIES);
+    return true;
+  }
+
+  function recordActiveHistory(snapshotState, reason, options) {
+    const apartment = activeApartment();
+    const recorded = addApartmentHistory(apartment, snapshotState, reason, options);
+    if (recorded) persistApartmentStore();
+    return recorded;
+  }
+
+  function syncActiveApartmentState(options) {
+    const apartment = activeApartment();
+    if (!apartment) return;
+
+    const nextState = cleanStateForApartment(state, state.apartmentName || apartment.name);
+    const previousState = apartment.state ? cleanStateForApartment(apartment.state, apartment.name) : null;
+    const name = normalizeApartmentName(nextState.apartmentName, apartment.name);
+    nextState.apartmentName = name;
+    state.apartmentName = name;
+    apartment.name = name;
+
+    if (previousState && !statesEqual(previousState, nextState)) {
+      addApartmentHistory(apartment, previousState, options && options.historyReason, options);
+    }
+
+    apartment.state = nextState;
+    apartment.updatedAt = new Date().toISOString();
+  }
+
+  function saveState(options) {
+    syncActiveApartmentState(options || {});
+    persistApartmentStore();
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (error) {
@@ -706,6 +993,53 @@
     }).format(new Date(dayNumber * 24 * 60 * 60 * 1000));
   }
 
+  function dateTimeLabel(value) {
+    const date = validIsoDateTime(value) ? new Date(value) : new Date();
+    return new Intl.DateTimeFormat("de-DE", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date);
+  }
+
+  function apartmentMonthLabel(apartmentState) {
+    const date = new Date(Date.UTC(apartmentState.year, apartmentState.month - 1, 1));
+    return new Intl.DateTimeFormat("de-DE", {
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    }).format(date);
+  }
+
+  function apartmentSummary(apartmentState) {
+    const calculation = calculateRentShare({
+      ...apartmentState,
+      emptyNightPolicy: apartmentState.emptyNightPolicy,
+    });
+    return {
+      rent: formatMoney(calculation.rentCents, apartmentState.currency, "de-DE"),
+      month: apartmentMonthLabel(apartmentState),
+      people: apartmentState.people.length,
+      nights: calculation.monthNights,
+    };
+  }
+
+  function uniqueApartmentName(baseName) {
+    const base = normalizeApartmentName(baseName, defaultApartmentName(apartmentStore.apartments.length + 1));
+    const used = new Set(apartmentStore.apartments.map((apartment) => apartment.name.toLocaleLowerCase()));
+    if (!used.has(base.toLocaleLowerCase())) return base;
+
+    let index = 2;
+    let next = `${base} ${index}`;
+    while (used.has(next.toLocaleLowerCase())) {
+      index += 1;
+      next = `${base} ${index}`;
+    }
+    return next;
+  }
+
   function money(cents) {
     return moneyInCurrency(cents, state.currency);
   }
@@ -743,6 +1077,10 @@
     return `${person.stays.length} Aufenthalte`;
   }
 
+  function isPersonDeleteArmed(personId) {
+    return deletePersonArmedId === personId && Date.now() <= deletePersonArmedUntil;
+  }
+
   function openSheet(type, options) {
     sheetState.type = type;
     sheetState.personId = options && options.personId ? options.personId : null;
@@ -763,6 +1101,8 @@
   }
 
   function buildShareText(calculation) {
+    const targetCurrencies = requiredPersonCurrencies();
+    const hasRateSummary = ratesCoverTargets(fxState.peopleRates, state.currency, targetCurrencies);
     const lines = [
       `Hausmiete ${monthLabel()}: ${money(calculation.rentCents)}`,
       `Basis: ${calculation.monthNights} ${nightWord(calculation.monthNights)} · Anreise zählt, Abreise nicht`,
@@ -787,6 +1127,17 @@
 
     if (calculation.unassignedCents > 0) {
       lines.push(`${vacancyLabel(calculation)}: ${money(calculation.unassignedCents)}`);
+    }
+
+    if (targetCurrencies.length && hasRateSummary) {
+      const rateParts = targetCurrencies.map((currency) => {
+        const rate = rateFor(currency, fxState.peopleRates);
+        return `1 ${state.currency} = ${rate.toFixed(5)} ${currency}`;
+      });
+      lines.push(
+        "",
+        `Zahlungswährungen: Frankfurter/ECB Livekurs vom ${formatRateDate(fxState.peopleRates.date)} · ${rateParts.join(" · ")}`,
+      );
     }
 
     lines.push("", `Summe verteilt: ${money(calculation.allocatedCents)}`);
@@ -833,10 +1184,14 @@
           <span class="app-logo" aria-hidden="true">H</span>
           <span>
             <strong>HouseSplit</strong>
-            <small>${escapeHtml(onlineLabel())}</small>
+            <small>${escapeHtml(activeApartmentName())} · ${escapeHtml(onlineLabel())}</small>
           </span>
         </a>
         <div class="topbar-actions">
+          <button class="icon-label-button" type="button" data-action="open-apartments" aria-label="Wohnungen und Verlauf öffnen">
+            <span class="button-icon icon-home" aria-hidden="true"></span>
+            <span>Wohnungen</span>
+          </button>
           ${installPrompt && !isStandalone
             ? `<button class="icon-label-button" type="button" data-action="install-app" aria-label="App installieren">
                 <span class="button-icon icon-download" aria-hidden="true"></span>
@@ -937,6 +1292,7 @@
             .map((person) => {
               const total = totals.get(person.id);
               const payment = personPaymentInfo(findPerson(person.id), total.totalCents);
+              const deleteArmed = isPersonDeleteArmed(person.id);
               return `
                 <article class="person-card" data-person-id="${escapeHtml(person.id)}">
                   <div class="person-topline">
@@ -963,8 +1319,11 @@
                   </div>
 
                   <div class="person-actions">
-                    <button class="secondary-button" type="button" data-action="open-person">Bearbeiten</button>
-                    <button class="ghost-button" type="button" data-action="add-stay">Aufenthalt</button>
+                    <button class="secondary-button" type="button" data-action="open-person">Person öffnen</button>
+                    <button class="ghost-button" type="button" data-action="add-stay">Nächte hinzufügen</button>
+                    ${state.people.length > 1 && total.nightsPresent === 0
+                      ? `<button class="ghost-button danger-text ${deleteArmed ? "danger-confirm" : ""}" type="button" data-action="remove-person">${deleteArmed ? "Wirklich entfernen" : "Entfernen"}</button>`
+                      : ""}
                   </div>
                 </article>
               `;
@@ -975,11 +1334,35 @@
     `;
   }
 
+  function renderReadiness(calculation) {
+    const status = readinessState(calculation);
+    return `
+      <div class="readiness-bar ${escapeHtml(status.tone)}">
+        <span class="readiness-dot" aria-hidden="true"></span>
+        <div>
+          <strong>${escapeHtml(status.title)}</strong>
+          <span>${escapeHtml(status.detail)}</span>
+        </div>
+        ${status.action
+          ? `<button
+              class="readiness-action"
+              type="button"
+              data-action="${escapeHtml(status.action)}"
+              ${status.personId ? `data-person-id="${escapeHtml(status.personId)}"` : ""}
+              ${status.disabled ? "disabled" : ""}
+            >${escapeHtml(status.label)}</button>`
+          : ""}
+      </div>
+    `;
+  }
+
   function renderSummary(calculation) {
     const percent =
       calculation.rentCents > 0
         ? Math.min(100, Math.round((calculation.allocatedCents / calculation.rentCents) * 100))
         : 0;
+    const status = readinessState(calculation);
+    const canShare = status.tone === "success";
 
     return `
       <section id="result" class="summary-panel app-section" aria-labelledby="result-title">
@@ -993,8 +1376,17 @@
             <p class="summary-rule">${calculation.monthNights} ${nightWord(calculation.monthNights)} · ${vacancyLabel(calculation)}</p>
           </div>
           <div class="summary-actions">
-            <button class="primary-button copy-button" type="button" data-action="copy">Kopieren</button>
-            <button class="secondary-button" type="button" data-action="open-share">Teilen</button>
+            ${canShare
+              ? `<button class="primary-button" type="button" data-action="open-share">Teilen</button>
+                 <button class="secondary-button copy-button" type="button" data-action="copy">Kopieren</button>`
+              : `<button
+                  class="primary-button"
+                  type="button"
+                  data-action="${escapeHtml(status.action)}"
+                  ${status.personId ? `data-person-id="${escapeHtml(status.personId)}"` : ""}
+                  ${status.disabled ? "disabled" : ""}
+                >${escapeHtml(status.label)}</button>
+                <button class="secondary-button copy-button" type="button" data-action="blocked-share">Teilen gesperrt</button>`}
           </div>
         </div>
 
@@ -1004,6 +1396,8 @@
             <span style="width: ${percent}%"></span>
           </div>
         </div>
+
+        ${renderReadiness(calculation)}
 
         <div class="totals-grid">
           ${calculation.totals
@@ -1104,13 +1498,19 @@
   }
 
   function renderSettingsSheet(calculation) {
+    const resetArmed = Date.now() <= resetArmedUntil;
     return `
       ${renderSheetHeader("Monatsdaten", "Setup")}
       <div class="sheet-body">
         <div class="control-grid">
           <label class="field">
+            <span>Apartment</span>
+            <input data-field="apartment-name" type="text" autocomplete="off" value="${escapeHtml(activeApartmentName())}">
+          </label>
+
+          <label class="field">
             <span>Miete</span>
-            <input data-field="rent" inputmode="decimal" type="number" min="0" step="0.01" value="${escapeHtml(state.rent)}">
+            <input data-field="rent" inputmode="decimal" type="text" autocomplete="off" value="${escapeHtml(state.rent)}">
           </label>
 
           <label class="field">
@@ -1148,14 +1548,114 @@
         <div class="sheet-callout">
           <div>
             <strong>Währung umrechnen</strong>
-            <span>Konvertiert die aktuelle Miete online mit dem Frankfurter/ECB-Livekurs.</span>
+            <span>Ändert die Monatsmiete selbst in eine andere Währung.</span>
           </div>
-          <button class="secondary-button" type="button" data-action="open-currency-converter">EZB umrechnen</button>
+          <button class="secondary-button" type="button" data-action="open-currency-converter">Miete umrechnen</button>
+        </div>
+
+        <div class="sheet-callout">
+          <div>
+            <strong>Als App nutzen</strong>
+            <span>Installationshinweise für iPhone, Android und Desktop öffnen.</span>
+          </div>
+          <button class="ghost-button" type="button" data-action="open-install-help">Öffnen</button>
+        </div>
+
+        <div class="sheet-callout">
+          <div>
+            <strong>Wohnungen & Verlauf</strong>
+            <span>Mehrere Apartments lokal speichern und Sicherungen wiederherstellen.</span>
+          </div>
+          <button class="secondary-button" type="button" data-action="open-apartments">Öffnen</button>
         </div>
 
         <div class="sheet-actions">
-          <button class="ghost-button danger-text" type="button" data-action="reset">Zurücksetzen</button>
+          <button class="ghost-button danger-text ${resetArmed ? "danger-confirm" : ""}" type="button" data-action="reset">
+            ${resetArmed ? "Jetzt wirklich zurücksetzen" : "Zurücksetzen"}
+          </button>
           <button class="primary-button" type="button" data-action="close-sheet">Fertig</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderApartmentCard(apartment) {
+    const apartmentState = cleanStateForApartment(apartment.state, apartment.name);
+    const summary = apartmentSummary(apartmentState);
+    const isActive = apartment.id === apartmentStore.activeId;
+
+    return `
+      <article class="apartment-card ${isActive ? "is-active" : ""}" data-apartment-id="${escapeHtml(apartment.id)}">
+        <div>
+          <strong>${escapeHtml(apartment.name)}</strong>
+          <span>${escapeHtml(summary.month)} · ${escapeHtml(summary.rent)} · ${summary.people} Personen</span>
+          <small>Gespeichert ${escapeHtml(dateTimeLabel(apartment.updatedAt))}</small>
+        </div>
+        ${isActive
+          ? `<span class="apartment-badge">Aktiv</span>`
+          : `<button class="secondary-button" type="button" data-action="switch-apartment">Öffnen</button>`}
+      </article>
+    `;
+  }
+
+  function renderHistoryRow(entry) {
+    const summary = apartmentSummary(cleanStateForApartment(entry.state, activeApartmentName()));
+
+    return `
+      <article class="history-row" data-history-id="${escapeHtml(entry.id)}">
+        <div>
+          <strong>${escapeHtml(entry.reason)}</strong>
+          <span>${escapeHtml(summary.month)} · ${escapeHtml(summary.rent)} · ${summary.people} Personen</span>
+          <small>${escapeHtml(dateTimeLabel(entry.createdAt))}</small>
+        </div>
+        <button class="ghost-button" type="button" data-action="restore-history">Wiederherstellen</button>
+      </article>
+    `;
+  }
+
+  function renderApartmentsSheet() {
+    const apartment = activeApartment();
+    const history = apartment && Array.isArray(apartment.history) ? apartment.history : [];
+
+    return `
+      ${renderSheetHeader("Wohnungen & Verlauf", "Speicher")}
+      <div class="sheet-body">
+        <div class="sheet-note">
+          <strong>${escapeHtml(activeApartmentName())}</strong>
+          <span>Alle Daten bleiben lokal auf diesem Gerät. Beim Bearbeiten entstehen automatisch Sicherungen, zusätzlich kannst du manuell sichern.</span>
+        </div>
+
+        <div class="sheet-actions split">
+          <button class="ghost-button" type="button" data-action="create-apartment">Neues Apartment</button>
+          <button class="secondary-button" type="button" data-action="duplicate-apartment">Kopie erstellen</button>
+          <button class="primary-button" type="button" data-action="save-history">Jetzt sichern</button>
+        </div>
+
+        <div class="sheet-section-head">
+          <div>
+            <h3>Gespeicherte Apartments</h3>
+            <p>Wechseln überschreibt nichts, sondern öffnet den gespeicherten Stand.</p>
+          </div>
+        </div>
+
+        <div class="apartment-list">
+          ${apartmentStore.apartments.map(renderApartmentCard).join("")}
+        </div>
+
+        <div class="sheet-section-head">
+          <div>
+            <h3>Verlauf</h3>
+            <p>Die letzten ${MAX_HISTORY_ENTRIES} Sicherungen der aktiven Wohnung.</p>
+          </div>
+        </div>
+
+        <div class="history-list">
+          ${history.length
+            ? history.map(renderHistoryRow).join("")
+            : `<div class="empty-state">
+                <strong>Noch keine Sicherung</strong>
+                <span>Tippe auf „Jetzt sichern“ oder ändere Daten, dann entsteht automatisch ein Verlauf.</span>
+              </div>`}
         </div>
       </div>
     `;
@@ -1258,6 +1758,13 @@
     const total = totalsById(calculation).get(person.id);
     const bounds = monthBounds(state);
     const payment = personPaymentInfo(person, total.totalCents);
+    const deleteArmed = isPersonDeleteArmed(person.id);
+    const paymentStatus =
+      personPayCurrency(person) !== state.currency
+        ? payment.isConverted && fxState.peopleRates
+          ? `Livekurs vom ${formatRateDate(fxState.peopleRates.date)}.`
+          : fxState.peopleStatus || "Livekurs wird automatisch geladen."
+        : "";
 
     return `
       ${renderSheetHeader(person.name, "Person")}
@@ -1300,7 +1807,7 @@
         </div>
 
         ${personPayCurrency(person) !== state.currency
-          ? `<p class="sheet-status" aria-live="polite">${escapeHtml(payment.statusText)} · ${fxState.peopleStatus || "Livekurs wird automatisch geladen."}</p>`
+          ? `<p class="sheet-status" aria-live="polite">${escapeHtml(payment.statusText)} · ${escapeHtml(paymentStatus)}</p>`
           : ""}
 
         <div class="sheet-section-head">
@@ -1308,7 +1815,13 @@
             <h3>Aufenthalte</h3>
             <p>Anreise zählt als Nacht, Abreise nicht.</p>
           </div>
-          <button class="secondary-button" type="button" data-action="add-stay">Aufenthalt</button>
+          <button class="secondary-button" type="button" data-action="add-stay">Nächte hinzufügen</button>
+        </div>
+
+        <div class="preset-actions" aria-label="Schnelle Aufenthalte">
+          <button class="ghost-button" type="button" data-action="first-half">Erste Hälfte</button>
+          <button class="ghost-button" type="button" data-action="second-half">Zweite Hälfte</button>
+          <button class="ghost-button" type="button" data-action="full-month">Ganzer Monat</button>
         </div>
 
         <div class="stays">
@@ -1321,8 +1834,9 @@
         </div>
 
         <div class="sheet-actions split">
-          <button class="ghost-button" type="button" data-action="full-month">Ganzer Monat</button>
-          <button class="ghost-button danger-text" type="button" data-action="remove-person">Person löschen</button>
+          <button class="ghost-button danger-text ${deleteArmed ? "danger-confirm" : ""}" type="button" data-action="remove-person">
+            ${deleteArmed ? "Jetzt wirklich löschen" : "Person löschen"}
+          </button>
         </div>
       </div>
     `;
@@ -1377,7 +1891,9 @@
         </label>
         <div class="sheet-actions">
           <button class="secondary-button" type="button" data-action="copy">Kopieren</button>
-          <button class="primary-button" type="button" data-action="native-share">System teilen</button>
+          ${navigator.share
+            ? `<button class="primary-button" type="button" data-action="native-share">System teilen</button>`
+            : `<button class="primary-button" type="button" data-action="copy">In Zwischenablage</button>`}
         </div>
       </div>
     `;
@@ -1388,6 +1904,7 @@
 
     let content = "";
     if (sheetState.type === "settings") content = renderSettingsSheet(calculation);
+    if (sheetState.type === "apartments") content = renderApartmentsSheet();
     if (sheetState.type === "currency") content = renderCurrencySheet();
     if (sheetState.type === "install") content = renderInstallSheet();
     if (sheetState.type === "person") content = renderPersonSheet(calculation);
@@ -1466,7 +1983,12 @@
     if (!field) return false;
 
     if (field === "rent") {
-      state.rent = Number(target.value);
+      state.rent = parseRentInput(target.value);
+      return true;
+    }
+
+    if (field === "apartment-name") {
+      state.apartmentName = normalizeApartmentName(target.value, activeApartmentName());
       return true;
     }
 
@@ -1548,10 +2070,18 @@
   }
 
   function removePerson(personId) {
+    if (state.people.length <= 1) {
+      showToast("Mindestens eine Person bleibt nötig");
+      return;
+    }
+
     const index = state.people.findIndex((person) => person.id === personId);
     if (index === -1) return;
 
+    recordActiveHistory(state, "Vor dem Löschen", { force: true });
     const [removed] = state.people.splice(index, 1);
+    deletePersonArmedId = "";
+    deletePersonArmedUntil = 0;
     closeSheet();
     showToast(`${removed.name} gelöscht`, {
       actionLabel: "Rückgängig",
@@ -1563,10 +2093,23 @@
 
   function addStay(person) {
     const bounds = monthBounds(state);
+    const monthStart = parseISODate(bounds.start);
+    const monthEnd = parseISODate(bounds.checkout);
+    const validStays = person.stays
+      .map((stay) => ({
+        start: parseISODate(stay.start),
+        end: parseISODate(stay.end),
+      }))
+      .filter((stay) => stay.start !== null && stay.end !== null)
+      .sort((a, b) => a.start - b.start);
+    const lastStay = validStays[validStays.length - 1];
+    const nextStart = Math.min(Math.max(lastStay ? lastStay.end : monthStart, monthStart), monthEnd - 1);
+    const nextEnd = Math.min(monthEnd, nextStart + 7);
+
     person.stays.push({
       id: createId("stay"),
-      start: bounds.start,
-      end: bounds.checkout,
+      start: formatISOFromDay(nextStart),
+      end: formatISOFromDay(Math.max(nextStart + 1, nextEnd)),
     });
   }
 
@@ -1575,16 +2118,143 @@
     person.stays = [{ id: createId("stay"), start: bounds.start, end: bounds.checkout }];
   }
 
+  function firstHalf(person) {
+    const bounds = monthBounds(state);
+    const secondHalfStartDay = Math.floor(daysInMonth(state.year, state.month) / 2) + 1;
+    person.stays = [
+      {
+        id: createId("stay"),
+        start: bounds.start,
+        end: formatISODate(state.year, state.month, secondHalfStartDay),
+      },
+    ];
+  }
+
+  function secondHalf(person) {
+    const bounds = monthBounds(state);
+    const secondHalfStartDay = Math.floor(daysInMonth(state.year, state.month) / 2) + 1;
+    person.stays = [
+      {
+        id: createId("stay"),
+        start: formatISODate(state.year, state.month, secondHalfStartDay),
+        end: bounds.checkout,
+      },
+    ];
+  }
+
   function removeStay(person, stayId) {
     const index = person.stays.findIndex((stay) => stay.id === stayId);
     if (index === -1) return;
 
+    recordActiveHistory(state, "Vor dem Löschen", { force: true });
     const [removed] = person.stays.splice(index, 1);
     showToast("Aufenthalt gelöscht", {
       actionLabel: "Rückgängig",
       onAction: () => {
         const latestPerson = findPerson(person.id);
         if (latestPerson) latestPerson.stays.splice(Math.min(index, latestPerson.stays.length), 0, removed);
+      },
+    });
+  }
+
+  function refreshCurrencyState() {
+    fxState.targetCurrency = state.currency === "EUR" ? "USD" : "EUR";
+    fxState.rates = null;
+    fxState.peopleRates = loadCachedFrankfurterRates(state.currency);
+    fxState.peopleStatus = "";
+  }
+
+  function createApartment() {
+    saveState({ historyReason: "Vor neuem Apartment" });
+    const name = uniqueApartmentName(defaultApartmentName(apartmentStore.apartments.length + 1));
+    const nextState = defaultState(name);
+    const now = new Date().toISOString();
+    const apartment = {
+      id: createId("apartment"),
+      name,
+      createdAt: now,
+      updatedAt: now,
+      state: cleanStateForApartment(nextState, name),
+      history: [],
+    };
+
+    apartmentStore.apartments.unshift(apartment);
+    apartmentStore.apartments = apartmentStore.apartments.slice(0, MAX_APARTMENTS);
+    apartmentStore.activeId = apartment.id;
+    state = cleanStateForApartment(apartment.state, apartment.name);
+    resetArmedUntil = 0;
+    deletePersonArmedId = "";
+    deletePersonArmedUntil = 0;
+    refreshCurrencyState();
+    saveState();
+    openSheet("settings");
+    showToast(`${name} angelegt`);
+  }
+
+  function duplicateApartment() {
+    saveState({ historyReason: "Vor Kopie" });
+    const sourceName = activeApartmentName();
+    const name = uniqueApartmentName(`${sourceName} Kopie`);
+    const nextState = cleanStateForApartment(state, name);
+    const now = new Date().toISOString();
+    const apartment = {
+      id: createId("apartment"),
+      name,
+      createdAt: now,
+      updatedAt: now,
+      state: nextState,
+      history: [],
+    };
+
+    apartmentStore.apartments.unshift(apartment);
+    apartmentStore.apartments = apartmentStore.apartments.slice(0, MAX_APARTMENTS);
+    apartmentStore.activeId = apartment.id;
+    state = cleanStateForApartment(apartment.state, apartment.name);
+    refreshCurrencyState();
+    saveState();
+    openSheet("settings");
+    showToast(`${name} geöffnet`);
+  }
+
+  function switchApartment(apartmentId) {
+    if (apartmentId === apartmentStore.activeId) return;
+    const nextApartment = apartmentStore.apartments.find((apartment) => apartment.id === apartmentId);
+    if (!nextApartment) return;
+
+    saveState({ historyReason: "Vor Wohnungswechsel" });
+    apartmentStore.activeId = nextApartment.id;
+    state = cleanStateForApartment(nextApartment.state, nextApartment.name);
+    resetArmedUntil = 0;
+    deletePersonArmedId = "";
+    deletePersonArmedUntil = 0;
+    refreshCurrencyState();
+    saveState();
+    closeSheet();
+    showToast(`${nextApartment.name} geöffnet`);
+  }
+
+  function saveManualHistory() {
+    const recorded = recordActiveHistory(state, "Manuelle Sicherung", { force: true });
+    saveState();
+    showToast(recorded ? "Sicherung gespeichert" : "Schon gesichert");
+  }
+
+  function restoreHistory(historyId) {
+    const apartment = activeApartment();
+    if (!apartment || !Array.isArray(apartment.history)) return;
+    const entry = apartment.history.find((item) => item.id === historyId);
+    if (!entry) return;
+
+    const previousState = JSON.parse(JSON.stringify(state));
+    recordActiveHistory(previousState, "Vor Wiederherstellung", { force: true });
+    state = cleanStateForApartment(entry.state, entry.state.apartmentName || apartment.name);
+    refreshCurrencyState();
+    saveState();
+    showToast("Sicherung wiederhergestellt", {
+      actionLabel: "Rückgängig",
+      onAction: () => {
+        state = sanitizeState(previousState);
+        refreshCurrencyState();
       },
     });
   }
@@ -1616,10 +2286,7 @@
   }
 
   async function nativeShare() {
-    const calculation = calculateRentShare({
-      ...state,
-      emptyNightPolicy: state.emptyNightPolicy,
-    });
+    const calculation = currentCalculation();
     const text = buildShareText(calculation);
 
     if (!navigator.share) {
@@ -1661,6 +2328,40 @@
       showToast("Installation nicht möglich");
     }
     render();
+  }
+
+  function openReadinessTarget(status) {
+    if (!status || !status.action || status.disabled) return;
+    if (status.action === "open-settings") {
+      openSheet("settings");
+      render();
+      focusSheet();
+      return;
+    }
+    if (status.action === "open-add-person") {
+      openSheet("add-person");
+      render();
+      focusSheet();
+      return;
+    }
+    if (status.action === "open-person" && status.personId) {
+      openSheet("person", { personId: status.personId });
+      render();
+      focusSheet();
+      return;
+    }
+    if (status.action === "refresh-person-rates") {
+      loadPersonPaymentRates();
+    }
+  }
+
+  function guardShareReady() {
+    const calculation = currentCalculation();
+    const status = readinessState(calculation);
+    if (status.tone === "success") return true;
+    showToast(`Erst prüfen: ${status.title}`, { duration: 3600 });
+    openReadinessTarget(status);
+    return false;
   }
 
   root.addEventListener("input", (event) => {
@@ -1712,7 +2413,8 @@
 
     const action = button.dataset.action;
     const personElement = button.closest("[data-person-id]");
-    const person = personElement ? findPerson(personElement.dataset.personId) : null;
+    const personId = button.dataset.personId || (personElement ? personElement.dataset.personId : "");
+    const person = personId ? findPerson(personId) : null;
     const stayElement = button.closest("[data-stay-id]");
 
     if (action === "toast-action") {
@@ -1730,6 +2432,13 @@
       return;
     }
 
+    if (action === "open-apartments") {
+      openSheet("apartments");
+      render();
+      focusSheet();
+      return;
+    }
+
     if (action === "open-currency-converter") {
       fxState.targetCurrency = state.currency === "EUR" ? "USD" : "EUR";
       openSheet("currency");
@@ -1739,8 +2448,59 @@
       return;
     }
 
+    if (action === "open-install-help") {
+      openSheet("install");
+      render();
+      focusSheet();
+      return;
+    }
+
     if (action === "refresh-ecb-rates") {
       loadEcbRates(state.currency, fxState.targetCurrency || "EUR");
+      return;
+    }
+
+    if (action === "refresh-person-rates") {
+      loadPersonPaymentRates();
+      return;
+    }
+
+    if (action === "create-apartment") {
+      createApartment();
+      saveState();
+      render();
+      focusSheet();
+      return;
+    }
+
+    if (action === "duplicate-apartment") {
+      duplicateApartment();
+      saveState();
+      render();
+      focusSheet();
+      return;
+    }
+
+    if (action === "save-history") {
+      saveManualHistory();
+      render();
+      focusSheet();
+      return;
+    }
+
+    if (action === "switch-apartment") {
+      const apartmentElement = button.closest("[data-apartment-id]");
+      switchApartment(apartmentElement ? apartmentElement.dataset.apartmentId : "");
+      saveState();
+      render();
+      return;
+    }
+
+    if (action === "restore-history") {
+      const historyElement = button.closest("[data-history-id]");
+      restoreHistory(historyElement ? historyElement.dataset.historyId : "");
+      render();
+      focusSheet();
       return;
     }
 
@@ -1750,6 +2510,7 @@
     }
 
     if (action === "open-share") {
+      if (!guardShareReady()) return;
       openSheet("share");
       render();
       focusSheet();
@@ -1797,19 +2558,69 @@
       openSheet("person", { personId: created.id });
     }
 
-    if (action === "remove-person" && person) removePerson(person.id);
+    if (action === "remove-person" && person) {
+      if (!isPersonDeleteArmed(person.id)) {
+        deletePersonArmedId = person.id;
+        deletePersonArmedUntil = Date.now() + 5200;
+        showToast("Zum Löschen erneut tippen", { duration: 4200 });
+        render();
+        focusSheet();
+        return;
+      }
+      removePerson(person.id);
+      saveState();
+      render();
+      return;
+    }
     if (action === "add-stay" && person) {
       addStay(person);
       openSheet("person", { personId: person.id });
+      saveState();
+      render();
+      focusSheet();
+      return;
     }
-    if (action === "full-month" && person) fullMonth(person);
+    if (action === "full-month" && person) {
+      fullMonth(person);
+      saveState();
+      render();
+      focusSheet();
+      return;
+    }
+    if (action === "first-half" && person) {
+      firstHalf(person);
+      saveState();
+      render();
+      focusSheet();
+      return;
+    }
+    if (action === "second-half" && person) {
+      secondHalf(person);
+      saveState();
+      render();
+      focusSheet();
+      return;
+    }
     if (action === "remove-stay" && person && stayElement) {
       removeStay(person, stayElement.dataset.stayId);
+      saveState();
+      render();
+      focusSheet();
+      return;
     }
     if (action === "reset") {
+      const now = Date.now();
+      if (now > resetArmedUntil) {
+        resetArmedUntil = now + 4200;
+        showToast("Zum Zurücksetzen erneut tippen", { duration: 4200 });
+        render();
+        return;
+      }
+      resetArmedUntil = 0;
       const previousState = JSON.parse(JSON.stringify(state));
-      state = defaultState();
-      fxState.peopleRates = loadCachedFrankfurterRates(state.currency);
+      recordActiveHistory(previousState, "Vor dem Zurücksetzen", { force: true });
+      state = defaultState(activeApartmentName());
+      refreshCurrencyState();
       closeSheet();
       showToast("Abrechnung zurückgesetzt", {
         actionLabel: "Rückgängig",
@@ -1819,11 +2630,17 @@
         },
       });
     }
+    if (action === "blocked-share") {
+      guardShareReady();
+      return;
+    }
     if (action === "copy") {
+      if (!guardShareReady()) return;
       copyShareText();
       return;
     }
     if (action === "native-share") {
+      if (!guardShareReady()) return;
       nativeShare();
       return;
     }

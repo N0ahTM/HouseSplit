@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.6.0
+
+- Added local multi-apartment storage with apartment switching, duplication, manual snapshots, and restore history.
+- Added a result readiness bar that guides users to the next needed action.
+- Improved guardrails for comma rent input, accidental last-person deletion, and default new stay ranges.
+- Added first-half, second-half, and full-month presets in person sheets.
+- Clarified share, copy, install, and global rent-conversion actions.
+- Refreshed cache-busted PWA assets for the premium usability pass.
+
 ## 1.5.0
 
 - Added per-person payment currencies with live Frankfurter/ECB conversion display.
