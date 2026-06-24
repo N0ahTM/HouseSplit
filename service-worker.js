@@ -1,10 +1,10 @@
-const CACHE_NAME = "house-share-calculator-v27";
+const CACHE_NAME = "house-share-calculator-v31";
 const ASSETS = [
   "./",
   "./index.html",
-  "./styles.css?v=20260624-v170",
-  "./calc.js?v=20260624-v170",
-  "./app.js?v=20260624-v170",
+  "./styles.css?v=20260624-v183",
+  "./calc.js?v=20260624-v183",
+  "./app.js?v=20260624-v183",
   "./manifest.webmanifest",
   "./icon.svg",
   "./docs/assets/icon-192.png",

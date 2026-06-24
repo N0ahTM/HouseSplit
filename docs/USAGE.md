@@ -30,8 +30,9 @@ When the app is opened in a normal browser tab, HouseSplit may show an install s
 4. Open setup to choose vacancy behavior:
    - `Separat anzeigen`: empty nights remain separate.
    - `Auf alle Personen verteilen`: empty nights are split across everyone.
-5. If the rent is in another currency, open `EZB umrechnen`, choose the target currency, and convert it with the online Frankfurter/ECB reference rate.
-6. When the result says it is ready, copy or share the summary text and send it to the group.
+5. In the same setup sheet, choose the app language, light/dark/system theme, normal or high contrast, and Liquid Glass or solid surfaces.
+6. If the rent is in another currency, open `EZB umrechnen`, choose the target currency, and convert it with the online Frankfurter/ECB reference rate.
+7. When the result says it is ready, copy or share the summary text and send it to the group.
 
 Data and saved person names are stored locally in the browser that opened the app.
 

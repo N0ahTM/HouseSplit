@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.8.0
+
+- Added German/English localization for the app shell, sheets, status messages, share text, and feedback toasts.
+- Added appearance settings for system, light, dark, high contrast, Liquid Glass, and solid surfaces.
+- Added runtime `lang`, theme-color, color-scheme, and OS theme sync for better browser and PWA integration.
+- Reworked CSS tokens so panels, sheets, bottom tabs, forms, toasts, and controls adapt consistently across accessibility modes.
+- Documented the new language and appearance controls and refreshed cache-busted PWA assets.
+
 ## 1.7.0
 
 - Changed the first-run state to one EUR-based full-month person instead of starting with unfinished extra people.

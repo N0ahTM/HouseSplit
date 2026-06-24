@@ -1,7 +1,9 @@
 {
   "name": "HouseSplit - Miete nach Nächten teilen",
   "short_name": "HouseSplit",
-  "description": "Monatsmiete nach Anreise, Abreise, Nächten und Leerstand fair teilen.",
+  "description": "Monatsmiete nach Anreise, Abreise, Nächten und Leerstand fair teilen. Deutsch und Englisch mit Light, Dark und High Contrast.",
+  "lang": "de",
+  "dir": "ltr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

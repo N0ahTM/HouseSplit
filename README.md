@@ -35,6 +35,8 @@ On iPhone or Android, add the site to your home screen to use it like a small ap
 - Installable PWA when opened from the GitHub Pages HTTPS URL.
 - Install prompt sheet for browser users on supported desktop and mobile browsers.
 - Native-app style top bar, safe-area spacing, bottom tabs, and mobile sheets.
+- German and English UI with localized status messages and share text.
+- Light, dark, system, high contrast, Liquid Glass, and solid-surface display modes.
 - Compact result, setup, person, and night-plan sections.
 - Local saved-person suggestions for recurring housemates.
 - Online ECB reference-rate conversion through the Frankfurter API.

@@ -15,6 +15,7 @@
   const STORAGE_KEY = "house-share-calculator:nights:v2";
   const APARTMENTS_STORAGE_KEY = "house-share-calculator:apartments:v1";
   const PEOPLE_LIBRARY_KEY = "house-share-calculator:people-library:v1";
+  const PREFERENCES_STORAGE_KEY = "house-share-calculator:preferences:v1";
   const ECB_RATES_STORAGE_KEY = "house-share-calculator:frankfurter-ecb-rate:v2";
   const ECB_RATE_SET_STORAGE_KEY = "house-share-calculator:frankfurter-ecb-rates:v3";
   const INSTALL_PROMO_KEY = "house-share-calculator:install-promo:v1";
@@ -56,6 +57,464 @@
     "PHP",
     "ISK",
   ];
+  const LANGUAGE_CODES = ["de", "en"];
+  const APPEARANCE_MODES = ["system", "light", "dark"];
+  const CONTRAST_MODES = ["standard", "high"];
+  const TRANSPARENCY_MODES = ["glass", "solid"];
+  const UI_TEXT = {
+    de: {
+      appOpenResult: "HouseSplit Ergebnis öffnen",
+      apartment: "Apartment",
+      apartmentActive: "Aktiv",
+      apartmentCreated: "{name} angelegt",
+      apartmentOpened: "{name} geöffnet",
+      apartmentSaved: "Gespeichert {date}",
+      apartments: "Wohnungen",
+      apartmentsAndHistory: "Wohnungen & Verlauf",
+      apartmentsAndHistoryOpen: "Wohnungen und Verlauf öffnen",
+      apartmentsOpen: "Wohnungen öffnen",
+      appInstall: "App installieren",
+      appInstalled: "HouseSplit installiert",
+      appInstallable: "Installierbar",
+      appInstallHelp: "Installationshilfe",
+      appAreas: "App-Bereiche",
+      appUse: "Als App nutzen",
+      appUseBody: "Installationshinweise für iPhone, Android und Desktop öffnen.",
+      arrival: "Anreise",
+      arrivalCounts: "Anreise zählt als Nacht, Abreise nicht.",
+      base: "Basis",
+      billingDetails: "Abrechnungsdetails",
+      cancel: "Abbrechen",
+      checkout: "Abreise",
+      close: "Schließen",
+      collapseSolid: "Deckend",
+      contrast: "Kontrast",
+      contrastHigh: "Hoch",
+      contrastStandard: "Normal",
+      copied: "Zusammenfassung kopiert",
+      copy: "Kopieren",
+      copyUnavailable: "Kopieren nicht möglich",
+      createCopy: "Kopie erstellen",
+      convertedTo: "In {currency} umgerechnet",
+      currency: "Währung",
+      currencyConvert: "Währung umrechnen",
+      currencyConvertBody: "Ändert die Monatsmiete selbst in eine andere Währung.",
+      currencyConvertRent: "Miete umrechnen",
+      currencyConvertedStatus: "{oldAmount} {oldCurrency} wurden mit dem Livekurs vom {date} zu {newAmount} {newCurrency} umgerechnet.",
+      currencyCurrentRent: "Aktuelle Miete",
+      currencyLiveLoad: "Livekurs laden",
+      currencyMissingLive: "Noch kein Livekurs für {source} nach {target} geladen.",
+      currencyPairUnsupported: "{source} oder {target} ist im Frankfurter/EZB-Feed nicht verfügbar.",
+      currencyRateCurrent: "Aktueller Kurs: {date} · 1 {source} = {rate} {target}",
+      currencyRatesCached: "Offline genutzt: letzter Kurs vom {date}.",
+      currencyRatesFail: "Zahlungswährungen konnten nicht geladen werden.",
+      currencyRatesLoaded: "Zahlungswährungen vom {date} geladen.",
+      currencyRatesLoading: "Zahlungswährungen werden geladen...",
+      currencyRateStatusCached: "Offline genutzt: letzter Frankfurter/EZB-Kurs vom {date}.",
+      currencyRateStatusFailed: "Frankfurter/EZB-Livekurs konnte nicht geladen werden.",
+      currencyRateStatusIdentity: "Quelle und Ziel sind identisch. Es ist keine Umrechnung nötig.",
+      currencyRateStatusLoaded: "Frankfurter/EZB-Livekurs vom {date} geladen.",
+      currencyRateStatusLoading: "Frankfurter/EZB-Livekurs wird geladen...",
+      currencySource: "Quelle: Frankfurter API mit ECB-Provider",
+      currencySourceBody: "Die App fragt online nur dieses Währungspaar ab. Miete, Namen und Aufenthalte werden nicht übertragen.",
+      currencyTarget: "Zielwährung",
+      dark: "Dunkel",
+      deletedStay: "Aufenthalt gelöscht",
+      deleteStay: "Aufenthalt löschen",
+      deletePerson: "Person löschen",
+      dialogClose: "Dialog schließen",
+      done: "Fertig",
+      duplicateSuffix: "Kopie",
+      edit: "Bearbeiten",
+      empty: "Leer",
+      emptyNightsShort: "{count} leer",
+      emptySeparate: "Separat anzeigen",
+      emptySplitAll: "Auf alle Personen verteilen",
+      emptyStay: "Keine Nächte eingetragen",
+      emptyStayHint: "Füge einen Aufenthalt hinzu oder wähle den ganzen Monat.",
+      enter: "Eintragen",
+      firstHalf: "Erste Hälfte",
+      fromAmount: "von {amount}",
+      fullMonth: "Ganzer Monat",
+      gotIt: "Verstanden",
+      highContrast: "Hoher Kontrast",
+      history: "Verlauf",
+      historyAuto: "Automatische Sicherung",
+      historyBeforeCopy: "Vor Kopie",
+      historyBeforeDelete: "Vor dem Löschen",
+      historyBeforeNewApartment: "Vor neuem Apartment",
+      historyBeforeReset: "Vor dem Zurücksetzen",
+      historyBeforeRestore: "Vor Wiederherstellung",
+      historyBeforeSwitch: "Vor Wohnungswechsel",
+      historyEmpty: "Noch keine Sicherung",
+      historyEmptyHint: "Tippe auf „Jetzt sichern“ oder ändere Daten, dann entsteht automatisch ein Verlauf.",
+      historyLatest: "Die letzten {count} Sicherungen der aktiven Wohnung.",
+      historyManual: "Manuelle Sicherung",
+      historySaved: "Sicherung gespeichert",
+      historySavedAlready: "Schon gesichert",
+      historyRestored: "Sicherung wiederhergestellt",
+      heroLede: "Mobile Abrechnung für WG, Ferienhaus und Freunde. Personen bleiben lokal gespeichert.",
+      heroTitle: "Miete nach Nächten teilen",
+      install: "Installieren",
+      installBody: "Installiere HouseSplit als App auf diesem Gerät. Danach öffnet es ohne Browser-Leiste und funktioniert nach dem ersten Laden offline.",
+      installBrowserBody: "Wenn dein Browser die Installation anbietet, findest du sie im Browser-Menü unter App installieren oder Zum Startbildschirm hinzufügen.",
+      installImpossible: "Installation nicht möglich",
+      installIosBody: "iOS erlaubt keinen direkten Install-Klick aus Webseiten. Öffne diese Seite in Safari und füge sie über das Teilen-Menü zum Home-Bildschirm hinzu.",
+      installIosStep1: "In Safari öffnen.",
+      installIosStep2: "Teilen-Button antippen.",
+      installIosStep3: "Zum Home-Bildschirm wählen.",
+      installed: "Installiert",
+      language: "Sprache",
+      languageGerman: "Deutsch",
+      languageEnglish: "English",
+      later: "Später",
+      light: "Hell",
+      liquidGlass: "Liquid Glass",
+      liveRateUnavailable: "Livekurs nicht verfügbar",
+      liveRateAuto: "Livekurs wird automatisch geladen.",
+      liveRateFrom: "Livekurs vom {date}.",
+      loading: "Lädt...",
+      localSaved: "Lokal gespeichert",
+      lookAndFeel: "Darstellung & Sprache",
+      lookAndFeelBody: "Theme, Kontrast, Transparenz und Sprache gelten sofort auf diesem Gerät.",
+      month: "Monat",
+      monthlyOverview: "Monatsübersicht",
+      monthlyData: "Monatsdaten",
+      monthlyRent: "Miete",
+      mode: "Modus",
+      multipleApartmentsBody: "Mehrere Apartments lokal speichern und Sicherungen wiederherstellen.",
+      name: "Name",
+      newApartment: "Neues Apartment",
+      newVersionAvailable: "Neue Version verfügbar",
+      newPerson: "Neue Person",
+      nightSingular: "Nacht",
+      nightPlural: "Nächte",
+      nightsAdd: "Nächte hinzufügen",
+      nightsAddFor: "Nächte für {name} hinzufügen",
+      nightPlan: "Nachtplan",
+      noSavedPeople: "Noch keine gespeicherten Personen",
+      noSavedPeopleHint: "Namen werden automatisch lokal gemerkt, sobald du sie nutzt.",
+      occupancy: "Aufteilung",
+      occupiedEmptyAverage: "{occupied} belegt · {empty} leer · ca. {amount} pro Nacht",
+      offlineReady: "Offline bereit",
+      open: "Öffnen",
+      openPerson: "Person öffnen",
+      openPersonNamed: "{name} öffnen",
+      paidIn: "Zahlt in {currency}",
+      payIn: "Zahlt in",
+      paymentAmount: "Zahlbetrag",
+      people: "Personen",
+      peopleKicker: "Bewohner",
+      person: "Person",
+      personAdd: "Person hinzufügen",
+      personCount: "{count} Personen",
+      personCountOne: "1 Person",
+      personDeleteConfirm: "Jetzt wirklich löschen",
+      personDeleted: "{name} gelöscht",
+      personRemove: "{name} entfernen",
+      personRemoveVisible: "Entfernen",
+      personReallyRemoveVisible: "Wirklich entfernen",
+      personSectionNote: "Kurzansicht hier, Details im Sheet.",
+      personRequired: "Mindestens eine Person bleibt nötig",
+      perNight: "pro Nacht",
+      period: "Zeitraum",
+      preferences: "Einstellungen",
+      privacyLocal: "Alle Daten bleiben lokal auf diesem Gerät. Beim Bearbeiten entstehen automatisch Sicherungen, zusätzlich kannst du manuell sichern.",
+      readyShare: "Bereit zum Teilen",
+      reducedTransparency: "Reduzierte Transparenz",
+      reload: "Neu laden",
+      reset: "Zurücksetzen",
+      resetArmed: "Jetzt wirklich zurücksetzen",
+      resetDone: "Abrechnung zurückgesetzt",
+      resetPrompt: "Zum Zurücksetzen erneut tippen",
+      restore: "Wiederherstellen",
+      result: "Ergebnis",
+      rules: "Regeln",
+      savedApartments: "Gespeicherte Apartments",
+      savedPeople: "Gespeicherte Personen",
+      saveNow: "Jetzt sichern",
+      secondHalf: "Zweite Hälfte",
+      separateAmount: "Separat: {amount}",
+      separately: "Separat",
+      setup: "Setup",
+      setupOpen: "Setup öffnen",
+      share: "Teilen",
+      shareBillTitle: "HouseSplit Abrechnung",
+      shareBlocked: "Teilen gesperrt",
+      shareBlockedReason: "Teilen ist gesperrt, weil die Abrechnung noch unvollständig ist",
+      shareCancelled: "Teilen abgebrochen",
+      shareOpened: "Teilen geöffnet",
+      shareBaseLine: "Basis: {nights} · {rule}",
+      sharePays: "Zahlt {amount}",
+      shareReadyGuard: "Erst prüfen: {title}",
+      shareRentLine: "Hausmiete {month}: {amount}",
+      shareRatesSummary: "Zahlungswährungen: Frankfurter/ECB Livekurs vom {date} · {rates}",
+      shareSharesHeading: "Anteile:",
+      shareSystem: "System teilen",
+      shareText: "Text für Chat oder Notizen",
+      shareToClipboard: "In Zwischenablage",
+      shared: "geteilt",
+      sheetStorage: "Speicher",
+      solidSurfaces: "Deckende Flächen",
+      solo: "allein",
+      splitSummary: "Summe verteilt: {amount}",
+      splitTotal: "verteilt",
+      statusCheck: "Aufenthalt prüfen",
+      statusLoad: "Laden",
+      statusLoading: "Lädt",
+      statusMissingCurrencyRates: "Kurse fehlen",
+      statusMissingRent: "Miete fehlt",
+      statusMissingRentDetail: "Monatsmiete eintragen.",
+      statusMissingStays: "Aufenthalte fehlen",
+      statusMissingStaysDetail: "Nächte eintragen.",
+      statusNoPeople: "Keine Personen",
+      statusNoPeopleDetail: "Person hinzufügen.",
+      statusRatesLoading: "Kurse laden",
+      statusVacancyOpen: "Leerstand offen",
+      stayIncomplete: "Unvollständig",
+      stayPlural: "Aufenthalte",
+      staySingular: "Aufenthalt",
+      storageSwitchHint: "Wechseln überschreibt nichts, sondern öffnet den gespeicherten Stand.",
+      tapDeleteAgain: "Zum Löschen erneut tippen",
+      textMarked: "Text ist markiert",
+      theme: "Modus",
+      themeSystem: "System",
+      undo: "Rückgängig",
+      vacancy: "Leerstand",
+      vacancySeparate: "Leerstand separat",
+      vacancySplit: "Leerstand verteilt",
+      vacancyUnassigned: "nicht Personen zugeordnet",
+      vacancyOpenSetup: "Öffne Setup, um Leerstand auf alle Personen zu verteilen.",
+      visualMode: "Darstellung",
+      withoutNights: "{count} ohne Nächte",
+    },
+    en: {
+      appOpenResult: "Open HouseSplit result",
+      apartment: "Apartment",
+      apartmentActive: "Active",
+      apartmentCreated: "{name} created",
+      apartmentOpened: "{name} opened",
+      apartmentSaved: "Saved {date}",
+      apartments: "Homes",
+      apartmentsAndHistory: "Homes & History",
+      apartmentsAndHistoryOpen: "Open homes and history",
+      apartmentsOpen: "Open homes",
+      appInstall: "Install app",
+      appInstalled: "HouseSplit installed",
+      appInstallable: "Installable",
+      appInstallHelp: "Install help",
+      appAreas: "App areas",
+      appUse: "Use as an app",
+      appUseBody: "Open install instructions for iPhone, Android, and desktop.",
+      arrival: "Arrival",
+      arrivalCounts: "Arrival counts as a night, checkout does not.",
+      base: "Base",
+      billingDetails: "Billing details",
+      cancel: "Cancel",
+      checkout: "Checkout",
+      close: "Close",
+      collapseSolid: "Solid",
+      contrast: "Contrast",
+      contrastHigh: "High",
+      contrastStandard: "Standard",
+      copied: "Summary copied",
+      copy: "Copy",
+      copyUnavailable: "Copy unavailable",
+      createCopy: "Create copy",
+      convertedTo: "Converted to {currency}",
+      currency: "Currency",
+      currencyConvert: "Convert currency",
+      currencyConvertBody: "Changes the monthly rent itself into another currency.",
+      currencyConvertRent: "Convert rent",
+      currencyConvertedStatus: "{oldAmount} {oldCurrency} was converted with the live rate from {date} to {newAmount} {newCurrency}.",
+      currencyCurrentRent: "Current rent",
+      currencyLiveLoad: "Load live rate",
+      currencyMissingLive: "No live rate loaded for {source} to {target} yet.",
+      currencyPairUnsupported: "{source} or {target} is not available in the Frankfurter/ECB feed.",
+      currencyRateCurrent: "Current rate: {date} · 1 {source} = {rate} {target}",
+      currencyRatesCached: "Offline used: latest rate from {date}.",
+      currencyRatesFail: "Payment currencies could not be loaded.",
+      currencyRatesLoaded: "Payment currencies loaded from {date}.",
+      currencyRatesLoading: "Loading payment currencies...",
+      currencyRateStatusCached: "Offline used: latest Frankfurter/ECB rate from {date}.",
+      currencyRateStatusFailed: "Frankfurter/ECB live rate could not be loaded.",
+      currencyRateStatusIdentity: "Source and target are identical. No conversion is needed.",
+      currencyRateStatusLoaded: "Frankfurter/ECB live rate from {date} loaded.",
+      currencyRateStatusLoading: "Loading Frankfurter/ECB live rate...",
+      currencySource: "Source: Frankfurter API with ECB provider",
+      currencySourceBody: "The app only requests this currency pair online. Rent, names, and stays are not transmitted.",
+      currencyTarget: "Target currency",
+      dark: "Dark",
+      deletedStay: "Stay deleted",
+      deleteStay: "Delete stay",
+      deletePerson: "Delete person",
+      dialogClose: "Close dialog",
+      done: "Done",
+      duplicateSuffix: "Copy",
+      edit: "Edit",
+      empty: "Empty",
+      emptyNightsShort: "{count} empty",
+      emptySeparate: "Show separately",
+      emptySplitAll: "Split across all people",
+      emptyStay: "No nights entered",
+      emptyStayHint: "Add a stay or choose the full month.",
+      enter: "Enter",
+      firstHalf: "First half",
+      fromAmount: "of {amount}",
+      fullMonth: "Full month",
+      gotIt: "Got it",
+      highContrast: "High contrast",
+      history: "History",
+      historyAuto: "Automatic backup",
+      historyBeforeCopy: "Before copy",
+      historyBeforeDelete: "Before deletion",
+      historyBeforeNewApartment: "Before new apartment",
+      historyBeforeReset: "Before reset",
+      historyBeforeRestore: "Before restore",
+      historyBeforeSwitch: "Before switching home",
+      historyEmpty: "No backup yet",
+      historyEmptyHint: "Tap “Save now” or edit data to create automatic history.",
+      historyLatest: "The latest {count} backups for the active home.",
+      historyManual: "Manual backup",
+      historySaved: "Backup saved",
+      historySavedAlready: "Already saved",
+      historyRestored: "Backup restored",
+      heroLede: "Mobile billing for flatshares, vacation homes, and friends. People stay saved locally.",
+      heroTitle: "Split rent by nights",
+      install: "Install",
+      installBody: "Install HouseSplit as an app on this device. It opens without browser chrome and works offline after the first load.",
+      installBrowserBody: "If your browser offers installation, find it in the browser menu under Install app or Add to home screen.",
+      installImpossible: "Installation unavailable",
+      installIosBody: "iOS does not allow a direct install click from websites. Open this page in Safari and add it to the Home Screen from the Share menu.",
+      installIosStep1: "Open in Safari.",
+      installIosStep2: "Tap the Share button.",
+      installIosStep3: "Choose Add to Home Screen.",
+      installed: "Installed",
+      language: "Language",
+      languageGerman: "Deutsch",
+      languageEnglish: "English",
+      later: "Later",
+      light: "Light",
+      liquidGlass: "Liquid Glass",
+      liveRateUnavailable: "Live rate unavailable",
+      liveRateAuto: "Live rate loads automatically.",
+      liveRateFrom: "Live rate from {date}.",
+      loading: "Loading...",
+      localSaved: "Saved locally",
+      lookAndFeel: "Appearance & Language",
+      lookAndFeelBody: "Theme, contrast, transparency, and language apply immediately on this device.",
+      month: "Month",
+      monthlyOverview: "Month overview",
+      monthlyData: "Monthly data",
+      monthlyRent: "Rent",
+      mode: "Mode",
+      multipleApartmentsBody: "Save multiple homes locally and restore backups.",
+      name: "Name",
+      newApartment: "New home",
+      newVersionAvailable: "New version available",
+      newPerson: "New person",
+      nightSingular: "night",
+      nightPlural: "nights",
+      nightsAdd: "Add nights",
+      nightsAddFor: "Add nights for {name}",
+      nightPlan: "Night plan",
+      noSavedPeople: "No saved people yet",
+      noSavedPeopleHint: "Names are remembered locally as soon as you use them.",
+      occupancy: "Split",
+      occupiedEmptyAverage: "{occupied} occupied · {empty} empty · about {amount} per night",
+      offlineReady: "Offline ready",
+      open: "Open",
+      openPerson: "Open person",
+      openPersonNamed: "Open {name}",
+      paidIn: "Pays in {currency}",
+      payIn: "Pays in",
+      paymentAmount: "Payment amount",
+      people: "People",
+      peopleKicker: "Residents",
+      person: "Person",
+      personAdd: "Add person",
+      personCount: "{count} people",
+      personCountOne: "1 person",
+      personDeleteConfirm: "Really delete now",
+      personDeleted: "{name} deleted",
+      personRemove: "Remove {name}",
+      personRemoveVisible: "Remove",
+      personReallyRemoveVisible: "Really remove",
+      personSectionNote: "Quick view here, details in the sheet.",
+      personRequired: "At least one person is required",
+      perNight: "per night",
+      period: "Period",
+      preferences: "Settings",
+      privacyLocal: "All data stays local on this device. Editing creates automatic backups, and you can also save manually.",
+      readyShare: "Ready to share",
+      reducedTransparency: "Reduced transparency",
+      reload: "Reload",
+      reset: "Reset",
+      resetArmed: "Really reset now",
+      resetDone: "Bill reset",
+      resetPrompt: "Tap again to reset",
+      restore: "Restore",
+      result: "Result",
+      rules: "Rules",
+      savedApartments: "Saved homes",
+      savedPeople: "Saved people",
+      saveNow: "Save now",
+      secondHalf: "Second half",
+      separateAmount: "Separate: {amount}",
+      separately: "Separate",
+      setup: "Setup",
+      setupOpen: "Open setup",
+      share: "Share",
+      shareBillTitle: "HouseSplit bill",
+      shareBlocked: "Share locked",
+      shareBlockedReason: "Sharing is locked because the bill is incomplete",
+      shareCancelled: "Share cancelled",
+      shareOpened: "Share opened",
+      shareBaseLine: "Base: {nights} · {rule}",
+      sharePays: "Pays {amount}",
+      shareReadyGuard: "Check first: {title}",
+      shareRentLine: "House rent {month}: {amount}",
+      shareRatesSummary: "Payment currencies: Frankfurter/ECB live rate from {date} · {rates}",
+      shareSharesHeading: "Shares:",
+      shareSystem: "System share",
+      shareText: "Text for chat or notes",
+      shareToClipboard: "To clipboard",
+      shared: "shared",
+      sheetStorage: "Storage",
+      solidSurfaces: "Solid surfaces",
+      solo: "solo",
+      splitSummary: "Total allocated: {amount}",
+      splitTotal: "allocated",
+      statusCheck: "Check stay",
+      statusLoad: "Load",
+      statusLoading: "Loading",
+      statusMissingCurrencyRates: "Rates missing",
+      statusMissingRent: "Rent missing",
+      statusMissingRentDetail: "Enter monthly rent.",
+      statusMissingStays: "Stays missing",
+      statusMissingStaysDetail: "Enter nights.",
+      statusNoPeople: "No people",
+      statusNoPeopleDetail: "Add a person.",
+      statusRatesLoading: "Loading rates",
+      statusVacancyOpen: "Vacancy open",
+      stayIncomplete: "Incomplete",
+      stayPlural: "stays",
+      staySingular: "stay",
+      storageSwitchHint: "Switching does not overwrite anything. It opens the saved state.",
+      tapDeleteAgain: "Tap again to delete",
+      textMarked: "Text selected",
+      theme: "Mode",
+      themeSystem: "System",
+      undo: "Undo",
+      vacancy: "Vacancy",
+      vacancySeparate: "Vacancy separate",
+      vacancySplit: "Vacancy allocated",
+      vacancyUnassigned: "not assigned to people",
+      vacancyOpenSetup: "Open setup to split vacancy across all people.",
+      visualMode: "Appearance",
+      withoutNights: "{count} without nights",
+    },
+  };
   const root = document.querySelector("#app");
   const toastState = {
     message: "",
@@ -94,6 +553,89 @@
     return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   }
 
+  function normalizeChoice(value, allowed, fallback) {
+    return allowed.includes(value) ? value : fallback;
+  }
+
+  function detectedLanguage() {
+    const language = window.navigator.language || "";
+    return language.toLocaleLowerCase().startsWith("en") ? "en" : "de";
+  }
+
+  function currentLanguage() {
+    return normalizeChoice(state.language, LANGUAGE_CODES, "de");
+  }
+
+  function localeCode() {
+    return currentLanguage() === "en" ? "en-US" : "de-DE";
+  }
+
+  function interpolate(template, values) {
+    return String(template).replace(/\{([a-zA-Z0-9_]+)\}/g, (match, key) =>
+      values && Object.prototype.hasOwnProperty.call(values, key) ? values[key] : match,
+    );
+  }
+
+  function t(key, values) {
+    const pack = UI_TEXT[currentLanguage()] || UI_TEXT.de;
+    const fallback = UI_TEXT.de[key] || key;
+    return interpolate(pack[key] || fallback, values);
+  }
+
+  function optionHtml(value, label, selected) {
+    return `<option value="${escapeHtml(value)}" ${selected === value ? "selected" : ""}>${escapeHtml(label)}</option>`;
+  }
+
+  function languageOptions(selected) {
+    return [
+      optionHtml("de", UI_TEXT.de.languageGerman, selected),
+      optionHtml("en", UI_TEXT.de.languageEnglish, selected),
+    ].join("");
+  }
+
+  function appearanceOptions(selected) {
+    return [
+      optionHtml("system", t("themeSystem"), selected),
+      optionHtml("light", t("light"), selected),
+      optionHtml("dark", t("dark"), selected),
+    ].join("");
+  }
+
+  function contrastOptions(selected) {
+    return [
+      optionHtml("standard", t("contrastStandard"), selected),
+      optionHtml("high", t("contrastHigh"), selected),
+    ].join("");
+  }
+
+  function transparencyOptions(selected) {
+    return [
+      optionHtml("glass", t("liquidGlass"), selected),
+      optionHtml("solid", t("solidSurfaces"), selected),
+    ].join("");
+  }
+
+  function effectiveTheme() {
+    if (state.appearance === "light" || state.appearance === "dark") return state.appearance;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+
+  function applyPreferences() {
+    const theme = effectiveTheme();
+    const html = document.documentElement;
+    html.lang = currentLanguage();
+    html.dataset.theme = theme;
+    html.dataset.appearance = state.appearance;
+    html.dataset.contrast = state.contrast;
+    html.dataset.transparency = state.transparency;
+    html.style.colorScheme = theme;
+
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+    if (themeColor) {
+      themeColor.setAttribute("content", state.contrast === "high" ? "#000000" : theme === "dark" ? "#08111f" : "#172554");
+    }
+  }
+
   function currentYearMonth() {
     const now = new Date();
     return {
@@ -111,7 +653,18 @@
   function parseRentInput(value) {
     const text = String(value || "").trim();
     if (!text) return 0;
-    const normalized = text.includes(",") ? text.replace(/\./g, "").replace(",", ".") : text;
+    const compact = text.replace(/\s/g, "");
+    const lastComma = compact.lastIndexOf(",");
+    const lastDot = compact.lastIndexOf(".");
+    const decimalSeparator = lastComma > lastDot ? "," : ".";
+    const normalized =
+      lastComma !== -1 && lastDot !== -1
+        ? compact
+            .replace(decimalSeparator === "," ? /\./g : /,/g, "")
+            .replace(decimalSeparator, ".")
+        : compact.includes(",")
+          ? compact.replace(",", ".")
+          : compact;
     const amount = Number(normalized);
     return Number.isFinite(amount) && amount > 0 ? amount : 0;
   }
@@ -141,6 +694,7 @@
   function defaultState(apartmentName) {
     const base = currentYearMonth();
     const bounds = monthBounds(base);
+    const preferences = defaultPreferences();
 
     return {
       apartmentName: normalizeApartmentName(apartmentName, defaultApartmentName(1)),
@@ -149,6 +703,7 @@
       year: base.year,
       month: base.month,
       emptyNightPolicy: "unassigned",
+      ...preferences,
       people: [
         {
           id: createId("person"),
@@ -193,6 +748,10 @@
       year: Math.min(Math.max(year, 1900), 2200),
       month: Math.min(Math.max(month, 1), 12),
       emptyNightPolicy,
+      language: normalizeChoice(state.language, LANGUAGE_CODES, fallback.language),
+      appearance: normalizeChoice(state.appearance, APPEARANCE_MODES, fallback.appearance),
+      contrast: normalizeChoice(state.contrast, CONTRAST_MODES, fallback.contrast),
+      transparency: normalizeChoice(state.transparency, TRANSPARENCY_MODES, fallback.transparency),
       people: people.map((person, personIndex) => ({
         id: person.id || createId("person"),
         name:
@@ -230,7 +789,7 @@
     return {
       id: entry.id || createId("history"),
       createdAt: validIsoDateTime(entry.createdAt) ? entry.createdAt : new Date().toISOString(),
-      reason: typeof entry.reason === "string" && entry.reason.trim() ? entry.reason.trim() : "Sicherung",
+      reason: typeof entry.reason === "string" && entry.reason.trim() ? entry.reason.trim() : "Backup",
       state: cleanStateForApartment(entry.state, apartmentName),
     };
   }
@@ -310,8 +869,56 @@
     }
   }
 
+  function defaultPreferences() {
+    return {
+      language: detectedLanguage(),
+      appearance: "system",
+      contrast: "standard",
+      transparency: "glass",
+    };
+  }
+
+  function sanitizePreferences(value) {
+    const fallback = defaultPreferences();
+    const preferences = value && typeof value === "object" ? value : {};
+    return {
+      language: normalizeChoice(preferences.language, LANGUAGE_CODES, fallback.language),
+      appearance: normalizeChoice(preferences.appearance, APPEARANCE_MODES, fallback.appearance),
+      contrast: normalizeChoice(preferences.contrast, CONTRAST_MODES, fallback.contrast),
+      transparency: normalizeChoice(preferences.transparency, TRANSPARENCY_MODES, fallback.transparency),
+    };
+  }
+
+  function loadPreferences() {
+    try {
+      const raw = window.localStorage.getItem(PREFERENCES_STORAGE_KEY);
+      return sanitizePreferences(raw ? JSON.parse(raw) : null);
+    } catch (error) {
+      return defaultPreferences();
+    }
+  }
+
+  function preferencesFromState(sourceState = state) {
+    return sanitizePreferences(sourceState);
+  }
+
+  function applyStoredPreferences(nextState, preferences) {
+    return {
+      ...nextState,
+      ...sanitizePreferences(preferences),
+    };
+  }
+
+  function persistPreferences() {
+    try {
+      window.localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(preferencesFromState()));
+    } catch (error) {
+      // Preferences are non-critical and still work in-memory when storage is blocked.
+    }
+  }
+
   let apartmentStore = loadApartmentStore();
-  let state = activeApartmentState();
+  let state = applyStoredPreferences(activeApartmentState(), loadPreferences());
   let peopleLibrary = loadPeopleLibrary();
   fxState.rates = loadCachedEcbRates();
   fxState.peopleRates = loadCachedFrankfurterRates(state.currency);
@@ -452,7 +1059,7 @@
   function formatRateDate(value) {
     const dayNumber = parseISODate(value);
     if (dayNumber === null) return value || "";
-    return new Intl.DateTimeFormat("de-DE", {
+    return new Intl.DateTimeFormat(localeCode(), {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -480,7 +1087,7 @@
   }
 
   function moneyInCurrency(cents, currency) {
-    return formatMoney(cents, currency, "de-DE");
+    return formatMoney(cents, currency, localeCode());
   }
 
   function personPayCurrency(person) {
@@ -525,7 +1132,7 @@
         currency,
         baseText,
         convertedText: "",
-        statusText: `Zahlt in ${currency}`,
+        statusText: t("paidIn", { currency }),
         isConverted: false,
       };
     }
@@ -536,7 +1143,7 @@
         currency,
         baseText,
         convertedText: moneyInCurrency(convertedCents, currency),
-        statusText: `Zahlt in ${currency}`,
+        statusText: t("paidIn", { currency }),
         isConverted: true,
       };
     }
@@ -544,8 +1151,8 @@
     return {
       currency,
       baseText,
-      convertedText: fxState.peopleIsLoading ? "Kurs lädt..." : `Kurs für ${currency} fehlt`,
-      statusText: `Zahlt in ${currency}`,
+      convertedText: fxState.peopleIsLoading ? t("currencyRatesLoading") : t("statusMissingCurrencyRates"),
+      statusText: t("paidIn", { currency }),
       isConverted: false,
     };
   }
@@ -569,70 +1176,70 @@
     if (calculation.rentCents <= 0) {
       return {
         tone: "danger",
-        title: "Miete fehlt",
-        detail: "Monatsmiete eintragen.",
+        title: t("statusMissingRent"),
+        detail: t("statusMissingRentDetail"),
         action: "open-settings",
-        label: "Eintragen",
+        label: t("enter"),
       };
     }
 
     if (!state.people.length) {
       return {
         tone: "danger",
-        title: "Keine Personen",
-        detail: "Person hinzufügen.",
+        title: t("statusNoPeople"),
+        detail: t("statusNoPeopleDetail"),
         action: "open-add-person",
-        label: "Person",
+        label: t("personAdd"),
       };
     }
 
     if (peopleWithoutNights.length === state.people.length) {
       return {
         tone: "warning",
-        title: "Aufenthalte fehlen",
-        detail: "Nächte eintragen.",
+        title: t("statusMissingStays"),
+        detail: t("statusMissingStaysDetail"),
         action: "open-person",
         personId: state.people[0].id,
-        label: "Aufenthalte eintragen",
+        label: t("nightsAdd"),
       };
     }
 
     if (peopleWithoutNights.length > 0) {
       return {
         tone: "warning",
-        title: `${peopleWithoutNights.length} ohne Nächte`,
+        title: t("withoutNights", { count: peopleWithoutNights.length }),
         detail: compactNameList(peopleWithoutNights),
         action: "open-person",
         personId: peopleWithoutNights[0].id,
-        label: "Aufenthalt prüfen",
+        label: t("statusCheck"),
       };
     }
 
     if (calculation.unassignedCents > 0 && state.emptyNightPolicy === "unassigned") {
       return {
         tone: "warning",
-        title: "Leerstand offen",
-        detail: `${money(calculation.unassignedCents)} separat`,
+        title: t("statusVacancyOpen"),
+        detail: `${money(calculation.unassignedCents)} ${t("separately").toLocaleLowerCase()}`,
         action: "open-settings",
-        label: "Regeln",
+        label: t("rules"),
       };
     }
 
     if (hasMissingRates) {
       return {
         tone: fxState.peopleIsLoading ? "info" : "warning",
-        title: fxState.peopleIsLoading ? "Kurse laden" : "Kurse fehlen",
+        title: fxState.peopleIsLoading ? t("statusRatesLoading") : t("statusMissingCurrencyRates"),
         detail: `${state.currency} → ${targetCurrencies.join(", ")}`,
         action: "refresh-person-rates",
-        label: fxState.peopleIsLoading ? "Lädt" : "Laden",
+        label: fxState.peopleIsLoading ? t("statusLoading") : t("statusLoad"),
         disabled: fxState.peopleIsLoading,
       };
     }
 
     return {
       tone: "success",
-      title: "Bereit zum Teilen",
-      detail: `${state.people.length} Personen · ${money(calculation.allocatedCents)}`,
+      title: t("readyShare"),
+      detail: `${personCountLabel(state.people.length)} · ${money(calculation.allocatedCents)}`,
     };
   }
 
@@ -662,7 +1269,7 @@
     const target = targetCurrency.toUpperCase();
 
     fxState.isLoading = true;
-    fxState.status = "Frankfurter/EZB-Livekurs wird geladen...";
+    fxState.status = t("currencyRateStatusLoading");
     render();
 
     try {
@@ -677,7 +1284,7 @@
           fetchedAt: new Date().toISOString(),
         };
         fxState.rates = parsed;
-        fxState.status = "Quelle und Ziel sind identisch. Es ist keine Umrechnung nötig.";
+        fxState.status = t("currencyRateStatusIdentity");
         return parsed;
       }
 
@@ -685,18 +1292,18 @@
       if (!response.ok) throw new Error(`Frankfurter request failed with ${response.status}`);
       const parsed = normalizeFrankfurterRatePayload(await response.json(), source, target);
       fxState.rates = parsed;
-      fxState.status = `Frankfurter/EZB-Livekurs vom ${formatRateDate(parsed.date)} geladen.`;
+      fxState.status = t("currencyRateStatusLoaded", { date: formatRateDate(parsed.date) });
       saveEcbRates(parsed);
       return parsed;
     } catch (error) {
       const cached = loadCachedEcbRates(source, target);
       if (cached) {
         fxState.rates = cached;
-        fxState.status = `Offline genutzt: letzter Frankfurter/EZB-Kurs vom ${formatRateDate(cached.date)}.`;
+        fxState.status = t("currencyRateStatusCached", { date: formatRateDate(cached.date) });
         return cached;
       }
 
-      fxState.status = "Frankfurter/EZB-Livekurs konnte nicht geladen werden.";
+      fxState.status = t("currencyRateStatusFailed");
       return null;
     } finally {
       fxState.isLoading = false;
@@ -721,7 +1328,7 @@
 
     fxState.peopleIsLoading = true;
     fxState.peopleRequestKey = requestKey;
-    fxState.peopleStatus = "Zahlungswährungen werden geladen...";
+    fxState.peopleStatus = t("currencyRatesLoading");
     render();
 
     try {
@@ -729,16 +1336,16 @@
       if (!response.ok) throw new Error(`Frankfurter request failed with ${response.status}`);
       const parsed = normalizeFrankfurterRatesPayload(await response.json(), source, targets);
       fxState.peopleRates = parsed;
-      fxState.peopleStatus = `Zahlungswährungen vom ${formatRateDate(parsed.date)} geladen.`;
+      fxState.peopleStatus = t("currencyRatesLoaded", { date: formatRateDate(parsed.date) });
       saveFrankfurterRates(parsed);
       return parsed;
     } catch (error) {
       if (cached) {
         fxState.peopleRates = cached;
-        fxState.peopleStatus = `Offline genutzt: letzter Kurs vom ${formatRateDate(cached.date)}.`;
+        fxState.peopleStatus = t("currencyRatesCached", { date: formatRateDate(cached.date) });
         return cached;
       }
-      fxState.peopleStatus = "Zahlungswährungen konnten nicht geladen werden.";
+      fxState.peopleStatus = t("currencyRatesFail");
       return null;
     } finally {
       fxState.peopleIsLoading = false;
@@ -764,14 +1371,14 @@
     const sourceCurrency = state.currency;
     const rates = await loadEcbRates(sourceCurrency, targetCurrency);
     if (!rates) {
-      showToast("Livekurs nicht verfügbar");
+      showToast(t("liveRateUnavailable"));
       render();
       return;
     }
 
     const converted = convertCurrencyAmount(state.rent, sourceCurrency, targetCurrency, rates);
     if (converted === null) {
-      fxState.status = `${sourceCurrency} oder ${targetCurrency} ist im Frankfurter/EZB-Feed nicht verfügbar.`;
+      fxState.status = t("currencyPairUnsupported", { source: sourceCurrency, target: targetCurrency });
       render();
       return;
     }
@@ -780,10 +1387,16 @@
     const previousCurrency = state.currency;
     state.rent = converted;
     state.currency = targetCurrency;
-    fxState.status = `${previousAmount} ${previousCurrency} wurden mit dem Livekurs vom ${formatRateDate(rates.date)} zu ${converted.toFixed(2)} ${targetCurrency} umgerechnet.`;
+    fxState.status = t("currencyConvertedStatus", {
+      oldAmount: previousAmount,
+      oldCurrency: previousCurrency,
+      date: formatRateDate(rates.date),
+      newAmount: converted.toFixed(2),
+      newCurrency: targetCurrency,
+    });
     saveState();
-    showToast(`In ${targetCurrency} umgerechnet`, {
-      actionLabel: "Rückgängig",
+    showToast(t("convertedTo", { currency: targetCurrency }), {
+      actionLabel: t("undo"),
       onAction: () => {
         state.rent = previousAmount;
         state.currency = previousCurrency;
@@ -893,7 +1506,7 @@
       {
         id: createId("history"),
         createdAt: new Date().toISOString(),
-        reason: reason || "Automatische Sicherung",
+        reason: reason || t("historyAuto"),
         state: snapshot,
       },
       ...(Array.isArray(apartment.history) ? apartment.history : []),
@@ -928,6 +1541,7 @@
   }
 
   function saveState(options) {
+    persistPreferences();
     syncActiveApartmentState(options || {});
     persistApartmentStore();
     try {
@@ -976,7 +1590,7 @@
 
   function monthLabel() {
     const date = new Date(Date.UTC(state.year, state.month - 1, 1));
-    return new Intl.DateTimeFormat("de-DE", {
+    return new Intl.DateTimeFormat(localeCode(), {
       month: "long",
       year: "numeric",
       timeZone: "UTC",
@@ -986,7 +1600,7 @@
   function dateLabel(value) {
     const dayNumber = parseISODate(value);
     if (dayNumber === null) return value || "";
-    return new Intl.DateTimeFormat("de-DE", {
+    return new Intl.DateTimeFormat(localeCode(), {
       day: "2-digit",
       month: "short",
       timeZone: "UTC",
@@ -995,7 +1609,7 @@
 
   function dateTimeLabel(value) {
     const date = validIsoDateTime(value) ? new Date(value) : new Date();
-    return new Intl.DateTimeFormat("de-DE", {
+    return new Intl.DateTimeFormat(localeCode(), {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -1006,7 +1620,7 @@
 
   function apartmentMonthLabel(apartmentState) {
     const date = new Date(Date.UTC(apartmentState.year, apartmentState.month - 1, 1));
-    return new Intl.DateTimeFormat("de-DE", {
+    return new Intl.DateTimeFormat(localeCode(), {
       month: "long",
       year: "numeric",
       timeZone: "UTC",
@@ -1019,7 +1633,7 @@
       emptyNightPolicy: apartmentState.emptyNightPolicy,
     });
     return {
-      rent: formatMoney(calculation.rentCents, apartmentState.currency, "de-DE"),
+      rent: formatMoney(calculation.rentCents, apartmentState.currency, localeCode()),
       month: apartmentMonthLabel(apartmentState),
       people: apartmentState.people.length,
       nights: calculation.monthNights,
@@ -1045,7 +1659,16 @@
   }
 
   function nightWord(count) {
-    return count === 1 ? "Nacht" : "Nächte";
+    return count === 1 ? t("nightSingular") : t("nightPlural");
+  }
+
+  function nightCountLabel(count) {
+    return `${count} ${nightWord(count)}`;
+  }
+
+  function personCountLabel(count) {
+    if (count === 1) return t("personCountOne");
+    return t("personCount", { count });
   }
 
   function personInitial(name) {
@@ -1055,26 +1678,28 @@
 
   function vacancyLabel(calculation) {
     return calculation.emptyNightPolicy === "split_all"
-      ? "Leerstand verteilt"
-      : "Leerstand separat";
+      ? t("vacancySplit")
+      : t("vacancySeparate");
   }
 
   function onlineLabel() {
-    if (!isOnline) return "Offline bereit";
-    if (isStandalone) return "Installiert";
-    if (installPrompt) return "Installierbar";
-    return "Lokal gespeichert";
+    if (!isOnline) return t("offlineReady");
+    if (isStandalone) return t("installed");
+    if (installPrompt) return t("appInstallable");
+    return t("localSaved");
   }
 
   function stayLabel(stay) {
-    if (!stay.start || !stay.end) return "Unvollständig";
-    return `${dateLabel(stay.start)} bis ${dateLabel(stay.end)}`;
+    if (!stay.start || !stay.end) return t("stayIncomplete");
+    return currentLanguage() === "en"
+      ? `${dateLabel(stay.start)} to ${dateLabel(stay.end)}`
+      : `${dateLabel(stay.start)} bis ${dateLabel(stay.end)}`;
   }
 
   function personStaySummary(person) {
-    if (!person.stays.length) return "Keine Aufenthalte";
+    if (!person.stays.length) return t("emptyStay");
     if (person.stays.length === 1) return stayLabel(person.stays[0]);
-    return `${person.stays.length} Aufenthalte`;
+    return `${person.stays.length} ${t("stayPlural")}`;
   }
 
   function isPersonDeleteArmed(personId) {
@@ -1154,10 +1779,13 @@
     const targetCurrencies = requiredPersonCurrencies();
     const hasRateSummary = ratesCoverTargets(fxState.peopleRates, state.currency, targetCurrencies);
     const lines = [
-      `Hausmiete ${monthLabel()}: ${money(calculation.rentCents)}`,
-      `Basis: ${calculation.monthNights} ${nightWord(calculation.monthNights)} · Anreise zählt, Abreise nicht`,
+      t("shareRentLine", { month: monthLabel(), amount: money(calculation.rentCents) }),
+      t("shareBaseLine", {
+        nights: nightCountLabel(calculation.monthNights),
+        rule: t("arrivalCounts"),
+      }),
       "",
-      "Anteile:",
+      t("shareSharesHeading"),
       ...calculation.totals.map((person) => {
         const statePerson = findPerson(person.id);
         const payment = personPaymentInfo(statePerson, person.totalCents);
@@ -1166,10 +1794,10 @@
           `${person.nightsPresent} ${nightWord(person.nightsPresent)}`,
         ];
         if (payment.convertedText && payment.isConverted) {
-          parts.push(`Zahlt ${payment.convertedText}`);
+          parts.push(t("sharePays", { amount: payment.convertedText }));
         }
         if (person.emptyShareCents > 0) {
-          parts.push(`${money(person.emptyShareCents)} Leerstand`);
+          parts.push(`${money(person.emptyShareCents)} ${t("vacancy")}`);
         }
         return parts.join(" | ");
       }),
@@ -1186,11 +1814,14 @@
       });
       lines.push(
         "",
-        `Zahlungswährungen: Frankfurter/ECB Livekurs vom ${formatRateDate(fxState.peopleRates.date)} · ${rateParts.join(" · ")}`,
+        t("shareRatesSummary", {
+          date: formatRateDate(fxState.peopleRates.date),
+          rates: rateParts.join(" · "),
+        }),
       );
     }
 
-    lines.push("", `Summe verteilt: ${money(calculation.allocatedCents)}`);
+    lines.push("", t("splitSummary", { amount: money(calculation.allocatedCents) }));
     return lines.join("\n");
   }
 
@@ -1230,7 +1861,7 @@
   function renderAppTopbar() {
     return `
       <header class="app-topbar">
-        <a class="app-mark" href="#result" aria-label="HouseSplit Ergebnis öffnen">
+        <a class="app-mark" href="#result" aria-label="${escapeHtml(t("appOpenResult"))}">
           <span class="app-logo" aria-hidden="true">H</span>
           <span>
             <strong>HouseSplit</strong>
@@ -1238,19 +1869,19 @@
           </span>
         </a>
         <div class="topbar-actions">
-          <button class="icon-label-button" type="button" data-action="open-apartments" aria-label="Wohnungen und Verlauf öffnen">
+          <button class="icon-label-button" type="button" data-action="open-apartments" aria-label="${escapeHtml(t("apartmentsAndHistoryOpen"))}">
             <span class="button-icon icon-home" aria-hidden="true"></span>
-            <span>Wohnungen</span>
+            <span>${escapeHtml(t("apartments"))}</span>
           </button>
           ${installPrompt && !isStandalone
-            ? `<button class="icon-label-button" type="button" data-action="install-app" aria-label="App installieren">
+            ? `<button class="icon-label-button" type="button" data-action="install-app" aria-label="${escapeHtml(t("appInstall"))}">
                 <span class="button-icon icon-download" aria-hidden="true"></span>
-                <span>Installieren</span>
+                <span>${escapeHtml(t("install"))}</span>
               </button>`
             : ""}
-          <button class="icon-label-button" type="button" data-action="open-settings" aria-label="Setup öffnen">
+          <button class="icon-label-button" type="button" data-action="open-settings" aria-label="${escapeHtml(t("setupOpen"))}">
             <span class="button-icon icon-settings" aria-hidden="true"></span>
-            <span>Setup</span>
+            <span>${escapeHtml(t("setup"))}</span>
           </button>
         </div>
       </header>
@@ -1262,20 +1893,20 @@
       <header class="app-hero">
         <div class="brand-block">
           <p class="eyebrow">HouseSplit</p>
-          <h1>Miete nach Nächten teilen</h1>
-          <p class="hero-lede">Mobile Abrechnung für WG, Ferienhaus und Freunde. Personen bleiben lokal gespeichert.</p>
+          <h1>${escapeHtml(t("heroTitle"))}</h1>
+          <p class="hero-lede">${escapeHtml(t("heroLede"))}</p>
         </div>
-        <div class="hero-facts" aria-label="Monatsübersicht">
+        <div class="hero-facts" aria-label="${escapeHtml(t("monthlyOverview"))}">
           <div>
             <span>${escapeHtml(monthLabel())}</span>
             <strong>${money(calculation.rentCents)}</strong>
           </div>
           <div>
-            <span>Zeitraum</span>
+            <span>${escapeHtml(t("period"))}</span>
             <strong>${calculation.monthNights} ${nightWord(calculation.monthNights)}</strong>
           </div>
           <div>
-            <span>Modus</span>
+            <span>${escapeHtml(t("mode"))}</span>
             <strong>${escapeHtml(vacancyLabel(calculation))}</strong>
           </div>
         </div>
@@ -1290,18 +1921,18 @@
       <section class="setup-panel" aria-labelledby="settings-title">
         <div class="setup-summary">
           <div>
-            <p class="eyebrow">Setup</p>
-            <h2 id="settings-title">Monatsdaten</h2>
+            <p class="eyebrow">${escapeHtml(t("setup"))}</p>
+            <h2 id="settings-title">${escapeHtml(t("monthlyData"))}</h2>
             <p class="section-note">${escapeHtml(monthLabel())} · ${money(calculation.rentCents)} · ${state.currency}</p>
           </div>
-          <button class="secondary-button" type="button" data-action="open-settings">Bearbeiten</button>
+          <button class="secondary-button" type="button" data-action="open-settings">${escapeHtml(t("edit"))}</button>
         </div>
 
-        <div class="setup-chips" aria-label="Abrechnungsdetails">
+        <div class="setup-chips" aria-label="${escapeHtml(t("billingDetails"))}">
           <span>${calculation.monthNights} ${nightWord(calculation.monthNights)}</span>
-          <span>${emptyNightCount} leer</span>
+          <span>${escapeHtml(t("emptyNightsShort", { count: emptyNightCount }))}</span>
           <span>${escapeHtml(vacancyLabel(calculation))}</span>
-          <span>${state.people.length} Personen</span>
+          <span>${escapeHtml(personCountLabel(state.people.length))}</span>
         </div>
       </section>
     `;
@@ -1317,14 +1948,14 @@
         ${isFocusedStay ? 'data-focus-stay="true"' : ""}
       >
         <label class="field compact">
-          <span>Anreise</span>
+          <span>${escapeHtml(t("arrival"))}</span>
           <input data-field="stay-start" type="date" min="${bounds.start}" max="${bounds.lastNight}" value="${escapeHtml(stay.start)}">
         </label>
         <label class="field compact">
-          <span>Abreise</span>
+          <span>${escapeHtml(t("checkout"))}</span>
           <input data-field="stay-end" type="date" min="${bounds.start}" max="${bounds.checkout}" value="${escapeHtml(stay.end)}">
         </label>
-        <button class="icon-button danger" type="button" data-action="remove-stay" aria-label="Aufenthalt löschen" title="Aufenthalt löschen">×</button>
+        <button class="icon-button danger" type="button" data-action="remove-stay" aria-label="${escapeHtml(t("deleteStay"))}" title="${escapeHtml(t("deleteStay"))}">×</button>
       </div>
     `;
   }
@@ -1336,11 +1967,11 @@
       <section class="people-section" aria-labelledby="people-title">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Bewohner</p>
-            <h2 id="people-title">Personen</h2>
-            <p class="section-note">Kurzansicht hier, Details im Sheet.</p>
+            <p class="eyebrow">${escapeHtml(t("peopleKicker"))}</p>
+            <h2 id="people-title">${escapeHtml(t("people"))}</h2>
+            <p class="section-note">${escapeHtml(t("personSectionNote"))}</p>
           </div>
-          <button class="primary-button" type="button" data-action="open-add-person">Neue Person</button>
+          <button class="primary-button" type="button" data-action="open-add-person">${escapeHtml(t("newPerson"))}</button>
         </div>
 
         <div class="people-list">
@@ -1349,6 +1980,11 @@
               const total = totals.get(person.id);
               const payment = personPaymentInfo(findPerson(person.id), total.totalCents);
               const deleteArmed = isPersonDeleteArmed(person.id);
+              const displayAmount = payment.isConverted && payment.convertedText ? payment.convertedText : payment.baseText;
+              const amountDetail =
+                payment.isConverted && payment.convertedText
+                  ? `${payment.baseText} ${t("base")}`
+                  : payment.convertedText || `${total.nightsPresent} ${nightWord(total.nightsPresent)}`;
               return `
                 <article class="person-card" data-person-id="${escapeHtml(person.id)}">
                   <div class="person-topline">
@@ -1360,18 +1996,16 @@
                       </div>
                     </div>
                     <div class="person-total">
-                      <strong>${escapeHtml(payment.convertedText || payment.baseText)}</strong>
-                      ${payment.convertedText
-                        ? `<span>${escapeHtml(payment.baseText)} Basis</span>`
-                        : `<span>${total.nightsPresent} ${nightWord(total.nightsPresent)}</span>`}
+                      <strong>${escapeHtml(displayAmount)}</strong>
+                      <span>${escapeHtml(amountDetail)}</span>
                     </div>
                   </div>
 
-                  <div class="person-stats" aria-label="Aufteilung">
+                  <div class="person-stats" aria-label="${escapeHtml(t("occupancy"))}">
                     <span>${escapeHtml(payment.statusText)}</span>
-                    <span>${total.soloNights} allein</span>
-                    <span>${total.sharedNights} geteilt</span>
-                    ${total.emptyShareCents > 0 ? `<span>${money(total.emptyShareCents)} Leerstand</span>` : ""}
+                    <span>${total.soloNights} ${escapeHtml(t("solo"))}</span>
+                    <span>${total.sharedNights} ${escapeHtml(t("shared"))}</span>
+                    ${total.emptyShareCents > 0 ? `<span>${money(total.emptyShareCents)} ${escapeHtml(t("vacancy"))}</span>` : ""}
                   </div>
 
                   <div class="person-actions">
@@ -1379,21 +2013,21 @@
                       class="secondary-button"
                       type="button"
                       data-action="open-person"
-                      aria-label="${escapeHtml(`${person.name} öffnen`)}"
-                    >Person öffnen</button>
+                      aria-label="${escapeHtml(t("openPersonNamed", { name: person.name }))}"
+                    >${escapeHtml(t("openPerson"))}</button>
                     <button
                       class="ghost-button"
                       type="button"
                       data-action="add-stay"
-                      aria-label="${escapeHtml(`Nächte für ${person.name} hinzufügen`)}"
-                    >Nächte hinzufügen</button>
+                      aria-label="${escapeHtml(t("nightsAddFor", { name: person.name }))}"
+                    >${escapeHtml(t("nightsAdd"))}</button>
                     ${state.people.length > 1 && total.nightsPresent === 0
                       ? `<button
                           class="ghost-button danger-text ${deleteArmed ? "danger-confirm" : ""}"
                           type="button"
                           data-action="remove-person"
-                          aria-label="${escapeHtml(`${person.name} entfernen`)}"
-                        >${deleteArmed ? "Wirklich entfernen" : "Entfernen"}</button>`
+                          aria-label="${escapeHtml(t("personRemove", { name: person.name }))}"
+                        >${escapeHtml(deleteArmed ? t("personReallyRemoveVisible") : t("personRemoveVisible"))}</button>`
                       : ""}
                   </div>
                 </article>
@@ -1440,17 +2074,17 @@
       <section id="result" class="summary-panel app-section" aria-labelledby="result-title">
         <div class="summary-head">
           <div>
-            <p class="eyebrow">Ergebnis</p>
+            <p class="eyebrow">${escapeHtml(t("result"))}</p>
             <h2 id="result-title">
               ${money(calculation.allocatedCents)}
-              <span>verteilt</span>
+              <span>${escapeHtml(t("splitTotal"))}</span>
             </h2>
             <p class="summary-rule">${calculation.monthNights} ${nightWord(calculation.monthNights)} · ${vacancyLabel(calculation)}</p>
           </div>
           <div class="summary-actions">
             ${canShare
-              ? `<button class="primary-button" type="button" data-action="open-share">Teilen</button>
-                 <button class="secondary-button copy-button" type="button" data-action="copy">Kopieren</button>`
+              ? `<button class="primary-button" type="button" data-action="open-share">${escapeHtml(t("share"))}</button>
+                 <button class="secondary-button copy-button" type="button" data-action="copy">${escapeHtml(t("copy"))}</button>`
               : `<button
                   class="primary-button"
                   type="button"
@@ -1463,13 +2097,13 @@
                   class="secondary-button copy-button"
                   type="button"
                   data-action="blocked-share"
-                  aria-label="Teilen ist gesperrt, weil die Abrechnung noch unvollständig ist"
-                >Teilen gesperrt</button>`}
+                  aria-label="${escapeHtml(t("shareBlockedReason"))}"
+                >${escapeHtml(t("shareBlocked"))}</button>`}
           </div>
         </div>
 
-        <div class="meter-block" aria-label="Verteilte Miete">
-          <span>von ${money(calculation.rentCents)}</span>
+        <div class="meter-block" aria-label="${escapeHtml(t("splitSummary", { amount: money(calculation.allocatedCents) }))}">
+          <span>${escapeHtml(t("fromAmount", { amount: money(calculation.rentCents) }))}</span>
           <div class="meter-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}">
             <span style="width: ${percent}%"></span>
           </div>
@@ -1481,16 +2115,19 @@
           ${calculation.totals
             .map((person) => {
               const payment = personPaymentInfo(findPerson(person.id), person.totalCents);
+              const displayAmount = payment.isConverted && payment.convertedText ? payment.convertedText : payment.baseText;
+              const amountDetail =
+                payment.isConverted && payment.convertedText
+                  ? `${payment.baseText} ${t("base")} · ${person.nightsPresent} ${nightWord(person.nightsPresent)}`
+                  : payment.convertedText || `${person.nightsPresent} ${nightWord(person.nightsPresent)}`;
               return `
                 <div class="total-tile">
                   <div class="total-tile-head">
                     <span class="person-avatar small" aria-hidden="true">${escapeHtml(personInitial(person.name))}</span>
                     <span>${escapeHtml(person.name)}</span>
                   </div>
-                  <strong>${escapeHtml(payment.convertedText || payment.baseText)}</strong>
-                  <small>${payment.convertedText
-                    ? `${escapeHtml(payment.baseText)} Basis · ${person.nightsPresent} ${nightWord(person.nightsPresent)}`
-                    : `${person.nightsPresent} ${nightWord(person.nightsPresent)}`}</small>
+                  <strong>${escapeHtml(displayAmount)}</strong>
+                  <small>${escapeHtml(amountDetail)}</small>
                 </div>
               `;
             })
@@ -1500,7 +2137,7 @@
               <div class="total-tile warning">
                 <span>${vacancyLabel(calculation)}</span>
                 <strong>${money(calculation.unassignedCents)}</strong>
-                <small>nicht Personen zugeordnet</small>
+                <small>${escapeHtml(t("vacancyUnassigned"))}</small>
               </div>
             `
             : ""}
@@ -1508,8 +2145,8 @@
 
         ${calculation.unassignedCents > 0
           ? `<div class="inline-alert">
-              <strong>${money(calculation.unassignedCents)} Leerstand</strong>
-              <span>Öffne Setup, um Leerstand auf alle Personen zu verteilen.</span>
+              <strong>${money(calculation.unassignedCents)} ${escapeHtml(t("vacancy"))}</strong>
+              <span>${escapeHtml(t("vacancyOpenSetup"))}</span>
             </div>`
           : ""}
       </section>
@@ -1526,8 +2163,12 @@
         <div class="section-heading">
           <div>
             <p class="eyebrow">${escapeHtml(monthLabel())}</p>
-            <h2 id="nights-title">Nachtplan</h2>
-            <p class="section-note">${occupiedNightCount} belegt · ${emptyNightCount} leer · ca. ${money(averageNightRent)} pro Nacht</p>
+            <h2 id="nights-title">${escapeHtml(t("nightPlan"))}</h2>
+            <p class="section-note">${escapeHtml(t("occupiedEmptyAverage", {
+              occupied: occupiedNightCount,
+              empty: emptyNightCount,
+              amount: money(averageNightRent),
+            }))}</p>
           </div>
         </div>
 
@@ -1536,12 +2177,12 @@
             .map((night) => {
               const occupantText = night.occupants.length
                 ? night.occupants.map((person) => person.name).join(", ")
-                : "Leer";
+                : t("empty");
               const shareText = night.shares.length
                 ? night.shares
                     .map((share) => `${share.name}: ${money(share.cents)}`)
                     .join(" | ")
-                : `Separat: ${money(night.unassignedCents)}`;
+                : t("separateAmount", { amount: money(night.unassignedCents) });
 
               return `
                 <div class="night-row ${night.isEmpty ? "is-empty" : ""}">
@@ -1570,7 +2211,7 @@
           <p class="eyebrow">${escapeHtml(kicker)}</p>
           <h2 id="sheet-title" tabindex="-1" data-sheet-focus>${escapeHtml(title)}</h2>
         </div>
-        <button class="icon-button" type="button" data-action="close-sheet" aria-label="Schließen" title="Schließen">×</button>
+        <button class="icon-button" type="button" data-action="close-sheet" aria-label="${escapeHtml(t("close"))}" title="${escapeHtml(t("close"))}">×</button>
       </div>
     `;
   }
@@ -1578,80 +2219,117 @@
   function renderSettingsSheet(calculation) {
     const resetArmed = Date.now() <= resetArmedUntil;
     return `
-      ${renderSheetHeader("Monatsdaten", "Setup")}
+      ${renderSheetHeader(t("monthlyData"), t("setup"))}
       <div class="sheet-body">
         <div class="control-grid">
           <label class="field">
-            <span>Apartment</span>
+            <span>${escapeHtml(t("apartment"))}</span>
             <input data-field="apartment-name" type="text" autocomplete="off" value="${escapeHtml(activeApartmentName())}">
           </label>
 
           <label class="field">
-            <span>Miete</span>
+            <span>${escapeHtml(t("monthlyRent"))}</span>
             <input data-field="rent" inputmode="decimal" type="text" autocomplete="off" value="${escapeHtml(state.rent)}">
           </label>
 
           <label class="field">
-            <span>Monat</span>
+            <span>${escapeHtml(t("month"))}</span>
             <input data-field="month" type="month" value="${escapeHtml(monthValue(state))}">
           </label>
 
           <label class="field">
-            <span>Währung</span>
+            <span>${escapeHtml(t("currency"))}</span>
             <select data-field="currency">
               ${currencyOptions(state.currency)}
             </select>
           </label>
 
           <label class="field">
-            <span>Leerstand</span>
+            <span>${escapeHtml(t("vacancy"))}</span>
             <select data-field="emptyNightPolicy">
-              <option value="unassigned" ${state.emptyNightPolicy === "unassigned" ? "selected" : ""}>Separat anzeigen</option>
-              <option value="split_all" ${state.emptyNightPolicy === "split_all" ? "selected" : ""}>Auf alle Personen verteilen</option>
+              <option value="unassigned" ${state.emptyNightPolicy === "unassigned" ? "selected" : ""}>${escapeHtml(t("emptySeparate"))}</option>
+              <option value="split_all" ${state.emptyNightPolicy === "split_all" ? "selected" : ""}>${escapeHtml(t("emptySplitAll"))}</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="sheet-callout preference-callout">
+          <div>
+            <strong>${escapeHtml(t("lookAndFeel"))}</strong>
+            <span>${escapeHtml(t("lookAndFeelBody"))}</span>
+          </div>
+        </div>
+
+        <div class="control-grid preference-grid">
+          <label class="field">
+            <span>${escapeHtml(t("language"))}</span>
+            <select data-field="language">
+              ${languageOptions(state.language)}
+            </select>
+          </label>
+
+          <label class="field">
+            <span>${escapeHtml(t("theme"))}</span>
+            <select data-field="appearance">
+              ${appearanceOptions(state.appearance)}
+            </select>
+          </label>
+
+          <label class="field">
+            <span>${escapeHtml(t("contrast"))}</span>
+            <select data-field="contrast">
+              ${contrastOptions(state.contrast)}
+            </select>
+          </label>
+
+          <label class="field">
+            <span>${escapeHtml(t("visualMode"))}</span>
+            <select data-field="transparency">
+              ${transparencyOptions(state.transparency)}
             </select>
           </label>
         </div>
 
         <div class="sheet-stat-grid">
           <div>
-            <span>Monat</span>
+            <span>${escapeHtml(t("month"))}</span>
             <strong>${calculation.monthNights} ${nightWord(calculation.monthNights)}</strong>
           </div>
           <div>
-            <span>Verteilt</span>
+            <span>${escapeHtml(t("splitTotal"))}</span>
             <strong>${money(calculation.allocatedCents)}</strong>
           </div>
         </div>
 
         <div class="sheet-callout">
           <div>
-            <strong>Währung umrechnen</strong>
-            <span>Ändert die Monatsmiete selbst in eine andere Währung.</span>
+            <strong>${escapeHtml(t("currencyConvert"))}</strong>
+            <span>${escapeHtml(t("currencyConvertBody"))}</span>
           </div>
-          <button class="secondary-button" type="button" data-action="open-currency-converter">Miete umrechnen</button>
+          <button class="secondary-button" type="button" data-action="open-currency-converter">${escapeHtml(t("currencyConvertRent"))}</button>
         </div>
 
         <div class="sheet-callout">
           <div>
-            <strong>Als App nutzen</strong>
-            <span>Installationshinweise für iPhone, Android und Desktop öffnen.</span>
+            <strong>${escapeHtml(t("appUse"))}</strong>
+            <span>${escapeHtml(t("appUseBody"))}</span>
           </div>
-          <button class="ghost-button" type="button" data-action="open-install-help">Installationshilfe</button>
+          <button class="ghost-button" type="button" data-action="open-install-help">${escapeHtml(t("appInstallHelp"))}</button>
         </div>
 
         <div class="sheet-callout">
           <div>
-            <strong>Wohnungen & Verlauf</strong>
-            <span>Mehrere Apartments lokal speichern und Sicherungen wiederherstellen.</span>
+            <strong>${escapeHtml(t("apartmentsAndHistory"))}</strong>
+            <span>${escapeHtml(t("multipleApartmentsBody"))}</span>
           </div>
-          <button class="secondary-button" type="button" data-action="open-apartments">Wohnungen öffnen</button>
+          <button class="secondary-button" type="button" data-action="open-apartments">${escapeHtml(t("apartmentsOpen"))}</button>
         </div>
 
         <div class="sheet-actions">
           <button class="ghost-button danger-text ${resetArmed ? "danger-confirm" : ""}" type="button" data-action="reset">
-            ${resetArmed ? "Jetzt wirklich zurücksetzen" : "Zurücksetzen"}
+            ${escapeHtml(resetArmed ? t("resetArmed") : t("reset"))}
           </button>
-          <button class="primary-button" type="button" data-action="close-sheet">Fertig</button>
+          <button class="primary-button" type="button" data-action="close-sheet">${escapeHtml(t("done"))}</button>
         </div>
       </div>
     `;
@@ -1666,12 +2344,12 @@
       <article class="apartment-card ${isActive ? "is-active" : ""}" data-apartment-id="${escapeHtml(apartment.id)}">
         <div>
           <strong>${escapeHtml(apartment.name)}</strong>
-          <span>${escapeHtml(summary.month)} · ${escapeHtml(summary.rent)} · ${summary.people} Personen</span>
-          <small>Gespeichert ${escapeHtml(dateTimeLabel(apartment.updatedAt))}</small>
+          <span>${escapeHtml(summary.month)} · ${escapeHtml(summary.rent)} · ${escapeHtml(personCountLabel(summary.people))}</span>
+          <small>${escapeHtml(t("apartmentSaved", { date: dateTimeLabel(apartment.updatedAt) }))}</small>
         </div>
         ${isActive
-          ? `<span class="apartment-badge">Aktiv</span>`
-          : `<button class="secondary-button" type="button" data-action="switch-apartment">Öffnen</button>`}
+          ? `<span class="apartment-badge">${escapeHtml(t("apartmentActive"))}</span>`
+          : `<button class="secondary-button" type="button" data-action="switch-apartment">${escapeHtml(t("open"))}</button>`}
       </article>
     `;
   }
@@ -1683,10 +2361,10 @@
       <article class="history-row" data-history-id="${escapeHtml(entry.id)}">
         <div>
           <strong>${escapeHtml(entry.reason)}</strong>
-          <span>${escapeHtml(summary.month)} · ${escapeHtml(summary.rent)} · ${summary.people} Personen</span>
+          <span>${escapeHtml(summary.month)} · ${escapeHtml(summary.rent)} · ${escapeHtml(personCountLabel(summary.people))}</span>
           <small>${escapeHtml(dateTimeLabel(entry.createdAt))}</small>
         </div>
-        <button class="ghost-button" type="button" data-action="restore-history">Wiederherstellen</button>
+        <button class="ghost-button" type="button" data-action="restore-history">${escapeHtml(t("restore"))}</button>
       </article>
     `;
   }
@@ -1696,23 +2374,23 @@
     const history = apartment && Array.isArray(apartment.history) ? apartment.history : [];
 
     return `
-      ${renderSheetHeader("Wohnungen & Verlauf", "Speicher")}
+      ${renderSheetHeader(t("apartmentsAndHistory"), t("sheetStorage"))}
       <div class="sheet-body">
         <div class="sheet-note">
           <strong>${escapeHtml(activeApartmentName())}</strong>
-          <span>Alle Daten bleiben lokal auf diesem Gerät. Beim Bearbeiten entstehen automatisch Sicherungen, zusätzlich kannst du manuell sichern.</span>
+          <span>${escapeHtml(t("privacyLocal"))}</span>
         </div>
 
         <div class="sheet-actions split">
-          <button class="ghost-button" type="button" data-action="create-apartment">Neues Apartment</button>
-          <button class="secondary-button" type="button" data-action="duplicate-apartment">Kopie erstellen</button>
-          <button class="primary-button" type="button" data-action="save-history">Jetzt sichern</button>
+          <button class="ghost-button" type="button" data-action="create-apartment">${escapeHtml(t("newApartment"))}</button>
+          <button class="secondary-button" type="button" data-action="duplicate-apartment">${escapeHtml(t("createCopy"))}</button>
+          <button class="primary-button" type="button" data-action="save-history">${escapeHtml(t("saveNow"))}</button>
         </div>
 
         <div class="sheet-section-head">
           <div>
-            <h3>Gespeicherte Apartments</h3>
-            <p>Wechseln überschreibt nichts, sondern öffnet den gespeicherten Stand.</p>
+            <h3>${escapeHtml(t("savedApartments"))}</h3>
+            <p>${escapeHtml(t("storageSwitchHint"))}</p>
           </div>
         </div>
 
@@ -1722,8 +2400,8 @@
 
         <div class="sheet-section-head">
           <div>
-            <h3>Verlauf</h3>
-            <p>Die letzten ${MAX_HISTORY_ENTRIES} Sicherungen der aktiven Wohnung.</p>
+            <h3>${escapeHtml(t("history"))}</h3>
+            <p>${escapeHtml(t("historyLatest", { count: MAX_HISTORY_ENTRIES }))}</p>
           </div>
         </div>
 
@@ -1731,8 +2409,8 @@
           ${history.length
             ? history.map(renderHistoryRow).join("")
             : `<div class="empty-state">
-                <strong>Noch keine Sicherung</strong>
-                <span>Tippe auf „Jetzt sichern“ oder ändere Daten, dann entsteht automatisch ein Verlauf.</span>
+                <strong>${escapeHtml(t("historyEmpty"))}</strong>
+                <span>${escapeHtml(t("historyEmptyHint"))}</span>
               </div>`}
         </div>
       </div>
@@ -1748,41 +2426,46 @@
     const pairRate = rates ? rateFor(targetCurrency, rates) : null;
 
     return `
-      ${renderSheetHeader("EZB-Umrechnung", "Währung")}
+      ${renderSheetHeader(t("currencyConvert"), t("currency"))}
       <div class="sheet-body">
         <div class="converter-card">
           <div>
-            <span>Aktuelle Miete</span>
+            <span>${escapeHtml(t("currencyCurrentRent"))}</span>
             <strong>${escapeHtml(String(state.rent))} ${escapeHtml(state.currency)}</strong>
           </div>
           <span class="converter-arrow" aria-hidden="true">→</span>
           <div>
-            <span>Zielwährung</span>
-            <strong>${converted === null ? "Livekurs laden" : `${converted.toFixed(2)} ${targetCurrency}`}</strong>
+            <span>${escapeHtml(t("currencyTarget"))}</span>
+            <strong>${escapeHtml(converted === null ? t("currencyLiveLoad") : `${converted.toFixed(2)} ${targetCurrency}`)}</strong>
           </div>
         </div>
 
         <label class="field">
-          <span>Nach Währung umrechnen</span>
+          <span>${escapeHtml(t("currencyConvert"))}</span>
           <select data-field="fx-target-currency">
             ${currencyOptions(targetCurrency)}
           </select>
         </label>
 
         <div class="sheet-note">
-          <strong>Quelle: Frankfurter API mit ECB-Provider</strong>
-          <span>Die App fragt online nur dieses Währungspaar ab. Miete, Namen und Aufenthalte werden nicht übertragen.</span>
+          <strong>${escapeHtml(t("currencySource"))}</strong>
+          <span>${escapeHtml(t("currencySourceBody"))}</span>
           ${rates
-            ? `<span>Aktueller Kurs: ${escapeHtml(formatRateDate(rates.date))} · 1 ${escapeHtml(state.currency)} = ${escapeHtml(pairRate.toFixed(5))} ${escapeHtml(targetCurrency)}</span>`
-            : `<span>Noch kein Livekurs für ${escapeHtml(state.currency)} nach ${escapeHtml(targetCurrency)} geladen.</span>`}
+            ? `<span>${escapeHtml(t("currencyRateCurrent", {
+                date: formatRateDate(rates.date),
+                source: state.currency,
+                rate: pairRate.toFixed(5),
+                target: targetCurrency,
+              }))}</span>`
+            : `<span>${escapeHtml(t("currencyMissingLive", { source: state.currency, target: targetCurrency }))}</span>`}
         </div>
 
         ${fxState.status ? `<p class="sheet-status" aria-live="polite">${escapeHtml(fxState.status)}</p>` : ""}
 
         <div class="sheet-actions">
-          <button class="ghost-button" type="button" data-action="refresh-ecb-rates" ${fxState.isLoading ? "disabled" : ""}>Livekurs laden</button>
+          <button class="ghost-button" type="button" data-action="refresh-ecb-rates" ${fxState.isLoading ? "disabled" : ""}>${escapeHtml(t("currencyLiveLoad"))}</button>
           <button class="primary-button" type="button" data-action="convert-currency" ${fxState.isLoading ? "disabled" : ""}>
-            ${fxState.isLoading ? "Lädt..." : "Umrechnen"}
+            ${escapeHtml(fxState.isLoading ? t("loading") : t("currencyConvertRent"))}
           </button>
         </div>
       </div>
@@ -1793,12 +2476,12 @@
     const platform = installPlatform();
     const nativeInstallAvailable = Boolean(installPrompt);
     const isIos = platform === "ios";
-    const title = isIos ? "Als App nutzen" : "HouseSplit installieren";
+    const title = isIos ? t("appUse") : t("appInstall");
     const body = nativeInstallAvailable
-      ? "Installiere HouseSplit als App auf diesem Gerät. Danach öffnet es ohne Browser-Leiste und funktioniert nach dem ersten Laden offline."
+      ? t("installBody")
       : isIos
-        ? "iOS erlaubt keinen direkten Install-Klick aus Webseiten. Öffne diese Seite in Safari und füge sie über das Teilen-Menü zum Home-Bildschirm hinzu."
-        : "Wenn dein Browser die Installation anbietet, findest du sie im Browser-Menü unter App installieren oder Zum Startbildschirm hinzufügen.";
+        ? t("installIosBody")
+        : t("installBrowserBody");
 
     return `
       ${renderSheetHeader(title, "PWA")}
@@ -1813,17 +2496,17 @@
 
         ${isIos
           ? `<ol class="install-steps">
-              <li>In Safari öffnen.</li>
-              <li>Teilen-Button antippen.</li>
-              <li>Zum Home-Bildschirm wählen.</li>
+              <li>${escapeHtml(t("installIosStep1"))}</li>
+              <li>${escapeHtml(t("installIosStep2"))}</li>
+              <li>${escapeHtml(t("installIosStep3"))}</li>
             </ol>`
           : ""}
 
         <div class="sheet-actions">
-          <button class="ghost-button" type="button" data-action="dismiss-install-promo">Später</button>
+          <button class="ghost-button" type="button" data-action="dismiss-install-promo">${escapeHtml(t("later"))}</button>
           ${nativeInstallAvailable
-            ? `<button class="primary-button" type="button" data-action="install-app">App installieren</button>`
-            : `<button class="primary-button" type="button" data-action="dismiss-install-promo">Verstanden</button>`}
+            ? `<button class="primary-button" type="button" data-action="install-app">${escapeHtml(t("appInstall"))}</button>`
+            : `<button class="primary-button" type="button" data-action="dismiss-install-promo">${escapeHtml(t("gotIt"))}</button>`}
         </div>
       </div>
     `;
@@ -1837,24 +2520,25 @@
     const bounds = monthBounds(state);
     const payment = personPaymentInfo(person, total.totalCents);
     const deleteArmed = isPersonDeleteArmed(person.id);
+    const displayAmount = payment.isConverted && payment.convertedText ? payment.convertedText : payment.baseText;
     const paymentStatus =
       personPayCurrency(person) !== state.currency
         ? payment.isConverted && fxState.peopleRates
-          ? `Livekurs vom ${formatRateDate(fxState.peopleRates.date)}.`
-          : fxState.peopleStatus || "Livekurs wird automatisch geladen."
+          ? t("liveRateFrom", { date: formatRateDate(fxState.peopleRates.date) })
+          : fxState.peopleStatus || t("liveRateAuto")
         : "";
 
     return `
-      ${renderSheetHeader(person.name, "Person")}
+      ${renderSheetHeader(person.name, t("person"))}
       <div class="sheet-body" data-person-id="${escapeHtml(person.id)}">
         <div class="control-grid">
           <label class="field">
-            <span>Name</span>
+            <span>${escapeHtml(t("name"))}</span>
             <input data-field="person-name" type="text" autocomplete="name" value="${escapeHtml(person.name)}">
           </label>
 
           <label class="field">
-            <span>Zahlt in</span>
+            <span>${escapeHtml(t("payIn"))}</span>
             <select data-field="person-currency">
               ${currencyOptions(personPayCurrency(person))}
             </select>
@@ -1863,23 +2547,23 @@
 
         <div class="sheet-stat-grid">
           <div>
-            <span>Zahlbetrag</span>
-            <strong>${escapeHtml(payment.convertedText || payment.baseText)}</strong>
+            <span>${escapeHtml(t("paymentAmount"))}</span>
+            <strong>${escapeHtml(displayAmount)}</strong>
           </div>
           <div>
-            <span>Basis</span>
+            <span>${escapeHtml(t("base"))}</span>
             <strong>${money(total.totalCents)}</strong>
           </div>
           <div>
-            <span>Anwesend</span>
+            <span>${escapeHtml(t("nightPlural"))}</span>
             <strong>${total.nightsPresent} ${nightWord(total.nightsPresent)}</strong>
           </div>
           <div>
-            <span>Allein</span>
+            <span>${escapeHtml(t("solo"))}</span>
             <strong>${total.soloNights}</strong>
           </div>
           <div>
-            <span>Geteilt</span>
+            <span>${escapeHtml(t("shared"))}</span>
             <strong>${total.sharedNights}</strong>
           </div>
         </div>
@@ -1890,29 +2574,29 @@
 
         <div class="sheet-section-head">
           <div>
-            <h3>Aufenthalte</h3>
-            <p>Anreise zählt als Nacht, Abreise nicht.</p>
+            <h3>${escapeHtml(t("stayPlural"))}</h3>
+            <p>${escapeHtml(t("arrivalCounts"))}</p>
           </div>
           <button
             class="secondary-button"
             type="button"
             data-action="add-stay"
-            aria-label="${escapeHtml(`Nächte für ${person.name} hinzufügen`)}"
-          >Nächte hinzufügen</button>
+            aria-label="${escapeHtml(t("nightsAddFor", { name: person.name }))}"
+          >${escapeHtml(t("nightsAdd"))}</button>
         </div>
 
-        <div class="preset-actions" aria-label="Schnelle Aufenthalte">
-          <button class="ghost-button" type="button" data-action="first-half" aria-label="${escapeHtml(`Erste Hälfte für ${person.name}`)}">Erste Hälfte</button>
-          <button class="ghost-button" type="button" data-action="second-half" aria-label="${escapeHtml(`Zweite Hälfte für ${person.name}`)}">Zweite Hälfte</button>
-          <button class="ghost-button" type="button" data-action="full-month" aria-label="${escapeHtml(`Ganzer Monat für ${person.name}`)}">Ganzer Monat</button>
+        <div class="preset-actions" aria-label="${escapeHtml(t("stayPlural"))}">
+          <button class="ghost-button" type="button" data-action="first-half" aria-label="${escapeHtml(t("firstHalf"))}">${escapeHtml(t("firstHalf"))}</button>
+          <button class="ghost-button" type="button" data-action="second-half" aria-label="${escapeHtml(t("secondHalf"))}">${escapeHtml(t("secondHalf"))}</button>
+          <button class="ghost-button" type="button" data-action="full-month" aria-label="${escapeHtml(t("fullMonth"))}">${escapeHtml(t("fullMonth"))}</button>
         </div>
 
         <div class="stays">
           ${person.stays.length > 0
             ? person.stays.map((stay) => renderStayRow(person, stay, bounds)).join("")
             : `<div class="empty-state">
-                <strong>Keine Nächte eingetragen</strong>
-                <span>Füge einen Aufenthalt hinzu oder wähle den ganzen Monat.</span>
+                <strong>${escapeHtml(t("emptyStay"))}</strong>
+                <span>${escapeHtml(t("emptyStayHint"))}</span>
               </div>`}
         </div>
 
@@ -1922,10 +2606,10 @@
                 class="ghost-button danger-text ${deleteArmed ? "danger-confirm" : ""}"
                 type="button"
                 data-action="remove-person"
-                aria-label="${escapeHtml(`${person.name} löschen`)}"
-              >${deleteArmed ? "Jetzt wirklich löschen" : "Person löschen"}</button>`
+                aria-label="${escapeHtml(t("personRemove", { name: person.name }))}"
+              >${escapeHtml(deleteArmed ? t("personDeleteConfirm") : t("deletePerson"))}</button>`
             : `<span></span>`}
-          <button class="primary-button" type="button" data-action="close-sheet">Fertig</button>
+          <button class="primary-button" type="button" data-action="close-sheet">${escapeHtml(t("done"))}</button>
         </div>
       </div>
     `;
@@ -1936,16 +2620,16 @@
     const savedNames = peopleLibrary.filter((name) => !existingNames.has(name.toLocaleLowerCase()));
 
     return `
-      ${renderSheetHeader("Person hinzufügen", "Bewohner")}
+      ${renderSheetHeader(t("personAdd"), t("peopleKicker"))}
       <div class="sheet-body">
         <label class="field">
-          <span>Name</span>
-          <input class="new-person-input" type="text" autocomplete="name" placeholder="Name">
+          <span>${escapeHtml(t("name"))}</span>
+          <input class="new-person-input" type="text" autocomplete="name" placeholder="${escapeHtml(t("name"))}">
         </label>
 
         ${savedNames.length
           ? `<div class="saved-people">
-              <h3>Gespeicherte Personen</h3>
+              <h3>${escapeHtml(t("savedPeople"))}</h3>
               <div>
                 ${savedNames
                   .map(
@@ -1956,13 +2640,13 @@
               </div>
             </div>`
           : `<div class="empty-state">
-              <strong>Noch keine gespeicherten Personen</strong>
-              <span>Namen werden automatisch lokal gemerkt, sobald du sie nutzt.</span>
+              <strong>${escapeHtml(t("noSavedPeople"))}</strong>
+              <span>${escapeHtml(t("noSavedPeopleHint"))}</span>
             </div>`}
 
         <div class="sheet-actions">
-          <button class="ghost-button" type="button" data-action="close-sheet">Abbrechen</button>
-          <button class="primary-button" type="button" data-action="create-person">Hinzufügen</button>
+          <button class="ghost-button" type="button" data-action="close-sheet">${escapeHtml(t("cancel"))}</button>
+          <button class="primary-button" type="button" data-action="create-person">${escapeHtml(t("personAdd"))}</button>
         </div>
       </div>
     `;
@@ -1972,17 +2656,17 @@
     const shareText = buildShareText(calculation);
 
     return `
-      ${renderSheetHeader("Zusammenfassung", "Teilen")}
+      ${renderSheetHeader(t("splitSummary", { amount: money(calculation.allocatedCents) }), t("share"))}
       <div class="sheet-body">
         <label class="field share-field">
-          <span>Text für Chat oder Notizen</span>
+          <span>${escapeHtml(t("shareText"))}</span>
           <textarea readonly rows="10">${escapeHtml(shareText)}</textarea>
         </label>
         <div class="sheet-actions">
-          <button class="secondary-button" type="button" data-action="copy">Kopieren</button>
+          <button class="secondary-button" type="button" data-action="copy">${escapeHtml(t("copy"))}</button>
           ${navigator.share
-            ? `<button class="primary-button" type="button" data-action="native-share">System teilen</button>`
-            : `<button class="primary-button" type="button" data-action="copy">In Zwischenablage</button>`}
+            ? `<button class="primary-button" type="button" data-action="native-share">${escapeHtml(t("shareSystem"))}</button>`
+            : `<button class="primary-button" type="button" data-action="copy">${escapeHtml(t("shareToClipboard"))}</button>`}
         </div>
       </div>
     `;
@@ -2003,7 +2687,7 @@
 
     return `
       <div class="sheet-layer" role="presentation">
-        <button class="sheet-backdrop" type="button" data-action="close-sheet" aria-label="Dialog schließen"></button>
+        <button class="sheet-backdrop" type="button" data-action="close-sheet" aria-label="${escapeHtml(t("dialogClose"))}"></button>
         <section class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="sheet-title" tabindex="-1">
           <span class="sheet-handle" aria-hidden="true"></span>
           ${content}
@@ -2026,6 +2710,7 @@
   }
 
   function render() {
+    applyPreferences();
     const calculation = calculateRentShare({
       ...state,
       emptyNightPolicy: state.emptyNightPolicy,
@@ -2048,18 +2733,18 @@
       </main>
       ${renderToast()}
       ${renderSheet(calculation)}
-      <nav class="bottom-tabs" aria-label="App-Bereiche">
+      <nav class="bottom-tabs" aria-label="${escapeHtml(t("appAreas"))}">
         <a class="is-active" href="#result" aria-current="page">
           <span class="tab-icon tab-result" aria-hidden="true"></span>
-          <span>Ergebnis</span>
+          <span>${escapeHtml(t("result"))}</span>
         </a>
         <a href="#entry">
           <span class="tab-icon tab-entry" aria-hidden="true"></span>
-          <span>Personen</span>
+          <span>${escapeHtml(t("people"))}</span>
         </a>
         <a href="#plan">
           <span class="tab-icon tab-plan" aria-hidden="true"></span>
-          <span>Plan</span>
+          <span>${escapeHtml(t("nightPlan"))}</span>
         </a>
       </nav>
     `;
@@ -2100,6 +2785,26 @@
 
     if (field === "emptyNightPolicy") {
       state.emptyNightPolicy = target.value;
+      return true;
+    }
+
+    if (field === "language") {
+      state.language = normalizeChoice(target.value, LANGUAGE_CODES, state.language || detectedLanguage());
+      return true;
+    }
+
+    if (field === "appearance") {
+      state.appearance = normalizeChoice(target.value, APPEARANCE_MODES, "system");
+      return true;
+    }
+
+    if (field === "contrast") {
+      state.contrast = normalizeChoice(target.value, CONTRAST_MODES, "standard");
+      return true;
+    }
+
+    if (field === "transparency") {
+      state.transparency = normalizeChoice(target.value, TRANSPARENCY_MODES, "glass");
       return true;
     }
 
@@ -2160,20 +2865,20 @@
 
   function removePerson(personId) {
     if (state.people.length <= 1) {
-      showToast("Mindestens eine Person bleibt nötig");
+      showToast(t("personRequired"));
       return;
     }
 
     const index = state.people.findIndex((person) => person.id === personId);
     if (index === -1) return;
 
-    recordActiveHistory(state, "Vor dem Löschen", { force: true });
+    recordActiveHistory(state, t("historyBeforeDelete"), { force: true });
     const [removed] = state.people.splice(index, 1);
     deletePersonArmedId = "";
     deletePersonArmedUntil = 0;
     closeSheet();
-    showToast(`${removed.name} gelöscht`, {
-      actionLabel: "Rückgängig",
+    showToast(t("personDeleted", { name: removed.name }), {
+      actionLabel: t("undo"),
       onAction: () => {
         state.people.splice(Math.min(index, state.people.length), 0, removed);
       },
@@ -2237,10 +2942,10 @@
     const index = person.stays.findIndex((stay) => stay.id === stayId);
     if (index === -1) return;
 
-    recordActiveHistory(state, "Vor dem Löschen", { force: true });
+    recordActiveHistory(state, t("historyBeforeDelete"), { force: true });
     const [removed] = person.stays.splice(index, 1);
-    showToast("Aufenthalt gelöscht", {
-      actionLabel: "Rückgängig",
+    showToast(t("deletedStay"), {
+      actionLabel: t("undo"),
       onAction: () => {
         const latestPerson = findPerson(person.id);
         if (latestPerson) latestPerson.stays.splice(Math.min(index, latestPerson.stays.length), 0, removed);
@@ -2256,9 +2961,9 @@
   }
 
   function createApartment() {
-    saveState({ historyReason: "Vor neuem Apartment" });
+    saveState({ historyReason: t("historyBeforeNewApartment") });
     const name = uniqueApartmentName(defaultApartmentName(apartmentStore.apartments.length + 1));
-    const nextState = defaultState(name);
+    const nextState = applyStoredPreferences(defaultState(name), preferencesFromState());
     const now = new Date().toISOString();
     const apartment = {
       id: createId("apartment"),
@@ -2272,20 +2977,20 @@
     apartmentStore.apartments.unshift(apartment);
     apartmentStore.apartments = apartmentStore.apartments.slice(0, MAX_APARTMENTS);
     apartmentStore.activeId = apartment.id;
-    state = cleanStateForApartment(apartment.state, apartment.name);
+    state = applyStoredPreferences(cleanStateForApartment(apartment.state, apartment.name), preferencesFromState());
     resetArmedUntil = 0;
     deletePersonArmedId = "";
     deletePersonArmedUntil = 0;
     refreshCurrencyState();
     saveState();
     openSheet("settings");
-    showToast(`${name} angelegt`);
+    showToast(t("apartmentCreated", { name }));
   }
 
   function duplicateApartment() {
-    saveState({ historyReason: "Vor Kopie" });
+    saveState({ historyReason: t("historyBeforeCopy") });
     const sourceName = activeApartmentName();
-    const name = uniqueApartmentName(`${sourceName} Kopie`);
+    const name = uniqueApartmentName(`${sourceName} ${t("duplicateSuffix")}`);
     const nextState = cleanStateForApartment(state, name);
     const now = new Date().toISOString();
     const apartment = {
@@ -2300,11 +3005,11 @@
     apartmentStore.apartments.unshift(apartment);
     apartmentStore.apartments = apartmentStore.apartments.slice(0, MAX_APARTMENTS);
     apartmentStore.activeId = apartment.id;
-    state = cleanStateForApartment(apartment.state, apartment.name);
+    state = applyStoredPreferences(cleanStateForApartment(apartment.state, apartment.name), preferencesFromState());
     refreshCurrencyState();
     saveState();
     openSheet("settings");
-    showToast(`${name} geöffnet`);
+    showToast(t("apartmentOpened", { name }));
   }
 
   function switchApartment(apartmentId) {
@@ -2312,22 +3017,22 @@
     const nextApartment = apartmentStore.apartments.find((apartment) => apartment.id === apartmentId);
     if (!nextApartment) return;
 
-    saveState({ historyReason: "Vor Wohnungswechsel" });
+    saveState({ historyReason: t("historyBeforeSwitch") });
     apartmentStore.activeId = nextApartment.id;
-    state = cleanStateForApartment(nextApartment.state, nextApartment.name);
+    state = applyStoredPreferences(cleanStateForApartment(nextApartment.state, nextApartment.name), preferencesFromState());
     resetArmedUntil = 0;
     deletePersonArmedId = "";
     deletePersonArmedUntil = 0;
     refreshCurrencyState();
     saveState();
     closeSheet();
-    showToast(`${nextApartment.name} geöffnet`);
+    showToast(t("apartmentOpened", { name: nextApartment.name }));
   }
 
   function saveManualHistory() {
-    const recorded = recordActiveHistory(state, "Manuelle Sicherung", { force: true });
+    const recorded = recordActiveHistory(state, t("historyManual"), { force: true });
     saveState();
-    showToast(recorded ? "Sicherung gespeichert" : "Schon gesichert");
+    showToast(recorded ? t("historySaved") : t("historySavedAlready"));
   }
 
   function restoreHistory(historyId) {
@@ -2337,14 +3042,14 @@
     if (!entry) return;
 
     const previousState = JSON.parse(JSON.stringify(state));
-    recordActiveHistory(previousState, "Vor Wiederherstellung", { force: true });
-    state = cleanStateForApartment(entry.state, entry.state.apartmentName || apartment.name);
+    recordActiveHistory(previousState, t("historyBeforeRestore"), { force: true });
+    state = applyStoredPreferences(cleanStateForApartment(entry.state, entry.state.apartmentName || apartment.name), preferencesFromState());
     refreshCurrencyState();
     saveState();
-    showToast("Sicherung wiederhergestellt", {
-      actionLabel: "Rückgängig",
+    showToast(t("historyRestored"), {
+      actionLabel: t("undo"),
       onAction: () => {
-        state = sanitizeState(previousState);
+        state = applyStoredPreferences(sanitizeState(previousState), preferencesFromState());
         refreshCurrencyState();
       },
     });
@@ -2359,7 +3064,7 @@
 
     try {
       await navigator.clipboard.writeText(text);
-      showToast("Zusammenfassung kopiert");
+      showToast(t("copied"));
       render();
     } catch (error) {
       const textarea = document.querySelector(".share-field textarea");
@@ -2367,11 +3072,11 @@
         textarea.focus();
         textarea.select();
         const copied = document.execCommand && document.execCommand("copy");
-        showToast(copied ? "Zusammenfassung kopiert" : "Text ist markiert");
+        showToast(copied ? t("copied") : t("textMarked"));
         render();
         return;
       }
-      showToast("Kopieren nicht möglich");
+      showToast(t("copyUnavailable"));
       render();
     }
   }
@@ -2387,13 +3092,13 @@
 
     try {
       await navigator.share({
-        title: "HouseSplit Abrechnung",
+        title: t("shareBillTitle"),
         text,
       });
-      showToast("Teilen geöffnet");
+      showToast(t("shareOpened"));
       render();
     } catch (error) {
-      showToast("Teilen abgebrochen");
+      showToast(t("shareCancelled"));
       render();
     }
   }
@@ -2413,10 +3118,10 @@
       const result = await prompt.userChoice;
       if (result && result.outcome === "accepted") {
         isStandalone = true;
-        showToast("HouseSplit installiert");
+        showToast(t("appInstalled"));
       }
     } catch (error) {
-      showToast("Installation nicht möglich");
+      showToast(t("installImpossible"));
     }
     render();
   }
@@ -2450,7 +3155,7 @@
     const calculation = currentCalculation();
     const status = readinessState(calculation);
     if (status.tone === "success") return true;
-    showToast(`Erst prüfen: ${status.title}`, { duration: 3600 });
+    showToast(t("shareReadyGuard", { title: status.title }), { duration: 3600 });
     openReadinessTarget(status);
     return false;
   }
@@ -2662,7 +3367,7 @@
       if (!isPersonDeleteArmed(person.id)) {
         deletePersonArmedId = person.id;
         deletePersonArmedUntil = Date.now() + 5200;
-        showToast("Zum Löschen erneut tippen", { duration: 4200 });
+        showToast(t("tapDeleteAgain"), { duration: 4200 });
         render();
         focusSheet();
         return;
@@ -2718,20 +3423,20 @@
       const now = Date.now();
       if (now > resetArmedUntil) {
         resetArmedUntil = now + 4200;
-        showToast("Zum Zurücksetzen erneut tippen", { duration: 4200 });
+        showToast(t("resetPrompt"), { duration: 4200 });
         render();
         return;
       }
       resetArmedUntil = 0;
       const previousState = JSON.parse(JSON.stringify(state));
-      recordActiveHistory(previousState, "Vor dem Zurücksetzen", { force: true });
-      state = defaultState(activeApartmentName());
+      recordActiveHistory(previousState, t("historyBeforeReset"), { force: true });
+      state = applyStoredPreferences(defaultState(activeApartmentName()), preferencesFromState(previousState));
       refreshCurrencyState();
       closeSheet();
-      showToast("Abrechnung zurückgesetzt", {
-        actionLabel: "Rückgängig",
+      showToast(t("resetDone"), {
+        actionLabel: t("undo"),
         onAction: () => {
-          state = sanitizeState(previousState);
+          state = applyStoredPreferences(sanitizeState(previousState), preferencesFromState());
           fxState.peopleRates = loadCachedFrankfurterRates(state.currency);
         },
       });
@@ -2765,8 +3470,8 @@
 
     navigator.serviceWorker.addEventListener("message", (event) => {
       if (event.data && event.data.type === "HOUSE_SPLIT_UPDATED") {
-        showToast("Neue Version verfügbar", {
-          actionLabel: "Neu laden",
+        showToast(t("newVersionAvailable"), {
+          actionLabel: t("reload"),
           onAction: () => window.location.reload(),
           duration: 8000,
         });
@@ -2798,9 +3503,19 @@
   window.addEventListener("appinstalled", () => {
     installPrompt = null;
     isStandalone = true;
-    showToast("HouseSplit installiert");
+    showToast(t("appInstalled"));
     render();
   });
+
+  const colorSchemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  const handleColorSchemeChange = () => {
+    if (state.appearance === "system") render();
+  };
+  if (typeof colorSchemeQuery.addEventListener === "function") {
+    colorSchemeQuery.addEventListener("change", handleColorSchemeChange);
+  } else if (typeof colorSchemeQuery.addListener === "function") {
+    colorSchemeQuery.addListener(handleColorSchemeChange);
+  }
 
   window.addEventListener("online", () => {
     isOnline = true;
@@ -2809,7 +3524,7 @@
 
   window.addEventListener("offline", () => {
     isOnline = false;
-    showToast("Offline bereit");
+    showToast(t("offlineReady"));
     render();
   });
 
