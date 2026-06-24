@@ -58,6 +58,7 @@
     "ISK",
   ];
   const LANGUAGE_CODES = ["de", "en"];
+  const TAB_VIEW_IDS = ["result", "people", "plan", "setup"];
   const APPEARANCE_MODES = ["system", "light", "dark"];
   const CONTRAST_MODES = ["standard", "high"];
   const TRANSPARENCY_MODES = ["glass", "solid"];
@@ -543,6 +544,7 @@
   let isStandalone =
     window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
   let tabSyncLockedUntil = 0;
+  let activeTabId = TAB_VIEW_IDS.includes(window.location.hash.slice(1)) ? window.location.hash.slice(1) : "result";
   let pendingSheetFocus = "";
   let focusedStayId = "";
 
@@ -1841,10 +1843,41 @@
     });
   }
 
+  function tabIdFromHash() {
+    const hashId = window.location.hash.slice(1);
+    return TAB_VIEW_IDS.includes(hashId) ? hashId : "result";
+  }
+
+  function isMobileTabLayout() {
+    return window.matchMedia("(max-width: 720px)").matches;
+  }
+
+  function setActiveTab(activeId, options = {}) {
+    activeTabId = TAB_VIEW_IDS.includes(activeId) ? activeId : "result";
+    root.dataset.activeView = activeTabId;
+    updateBottomTabs(activeTabId);
+
+    if (options.updateHash && window.location.hash !== `#${activeTabId}`) {
+      window.history.pushState(null, "", `#${activeTabId}`);
+    }
+
+    if (options.scrollToTop && isMobileTabLayout()) {
+      window.scrollTo({
+        top: 0,
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      });
+    }
+  }
+
   function syncBottomTabs() {
+    if (isMobileTabLayout()) {
+      updateBottomTabs(activeTabId);
+      return;
+    }
+
     if (Date.now() < tabSyncLockedUntil) return;
 
-    const sections = ["result", "entry", "plan"]
+    const sections = ["result", "setup", "people", "plan"]
       .map((id) => document.getElementById(id))
       .filter(Boolean);
     if (!sections.length) return;
@@ -1855,6 +1888,7 @@
         .slice()
         .reverse()
         .find((section) => section.offsetTop <= probe) || sections[0];
+    activeTabId = current.id;
     updateBottomTabs(current.id);
   }
 
@@ -1918,14 +1952,17 @@
     const emptyNightCount = calculation.nightRows.filter((night) => night.isEmpty).length;
 
     return `
-      <section class="setup-panel" aria-labelledby="settings-title">
+      <section id="setup" class="setup-panel app-section" aria-labelledby="settings-title">
         <div class="setup-summary">
           <div>
             <p class="eyebrow">${escapeHtml(t("setup"))}</p>
             <h2 id="settings-title">${escapeHtml(t("monthlyData"))}</h2>
             <p class="section-note">${escapeHtml(monthLabel())} · ${money(calculation.rentCents)} · ${state.currency}</p>
           </div>
-          <button class="secondary-button" type="button" data-action="open-settings">${escapeHtml(t("edit"))}</button>
+          <div class="setup-actions">
+            <button class="secondary-button" type="button" data-action="open-settings">${escapeHtml(t("edit"))}</button>
+            <button class="ghost-button" type="button" data-action="open-apartments">${escapeHtml(t("apartments"))}</button>
+          </div>
         </div>
 
         <div class="setup-chips" aria-label="${escapeHtml(t("billingDetails"))}">
@@ -1964,7 +2001,7 @@
     const totals = totalsById(calculation);
 
     return `
-      <section class="people-section" aria-labelledby="people-title">
+      <section id="people" class="people-section app-section" aria-labelledby="people-title">
         <div class="section-heading">
           <div>
             <p class="eyebrow">${escapeHtml(t("peopleKicker"))}</p>
@@ -2711,6 +2748,8 @@
 
   function render() {
     applyPreferences();
+    activeTabId = tabIdFromHash();
+    root.dataset.activeView = activeTabId;
     const calculation = calculateRentShare({
       ...state,
       emptyNightPolicy: state.emptyNightPolicy,
@@ -2721,7 +2760,7 @@
       ${renderHero(calculation)}
       <main id="main-content">
         ${renderSummary(calculation)}
-        <div id="entry" class="workspace app-section">
+        <div class="workspace">
           <div class="workspace-main">
             ${renderControls(calculation)}
             ${renderPeople(calculation)}
@@ -2734,17 +2773,21 @@
       ${renderToast()}
       ${renderSheet(calculation)}
       <nav class="bottom-tabs" aria-label="${escapeHtml(t("appAreas"))}">
-        <a class="is-active" href="#result" aria-current="page">
+        <a class="${activeTabId === "result" ? "is-active" : ""}" href="#result" ${activeTabId === "result" ? 'aria-current="page"' : ""}>
           <span class="tab-icon tab-result" aria-hidden="true"></span>
           <span>${escapeHtml(t("result"))}</span>
         </a>
-        <a href="#entry">
+        <a class="${activeTabId === "people" ? "is-active" : ""}" href="#people" ${activeTabId === "people" ? 'aria-current="page"' : ""}>
           <span class="tab-icon tab-entry" aria-hidden="true"></span>
           <span>${escapeHtml(t("people"))}</span>
         </a>
-        <a href="#plan">
+        <a class="${activeTabId === "plan" ? "is-active" : ""}" href="#plan" ${activeTabId === "plan" ? 'aria-current="page"' : ""}>
           <span class="tab-icon tab-plan" aria-hidden="true"></span>
           <span>${escapeHtml(t("nightPlan"))}</span>
+        </a>
+        <a class="${activeTabId === "setup" ? "is-active" : ""}" href="#setup" ${activeTabId === "setup" ? 'aria-current="page"' : ""}>
+          <span class="tab-icon tab-setup" aria-hidden="true"></span>
+          <span>${escapeHtml(t("setup"))}</span>
         </a>
       </nav>
     `;
@@ -3185,17 +3228,16 @@
       if (!target) return;
 
       tabSyncLockedUntil = Date.now() + 700;
-      updateBottomTabs(targetId);
-      if (window.location.hash !== `#${targetId}`) {
-        window.history.pushState(null, "", `#${targetId}`);
-      }
+      setActiveTab(targetId, { updateHash: true, scrollToTop: true });
 
-      const scrollMarginTop = Number.parseFloat(window.getComputedStyle(target).scrollMarginTop) || 0;
-      const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - scrollMarginTop);
-      window.scrollTo({
-        top,
-        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
-      });
+      if (!isMobileTabLayout()) {
+        const scrollMarginTop = Number.parseFloat(window.getComputedStyle(target).scrollMarginTop) || 0;
+        const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - scrollMarginTop);
+        window.scrollTo({
+          top,
+          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+        });
+      }
 
       window.setTimeout(() => {
         tabSyncLockedUntil = 0;
@@ -3538,8 +3580,7 @@
 
   window.addEventListener("scroll", syncBottomTabs, { passive: true });
   window.addEventListener("hashchange", () => {
-    const activeId = window.location.hash.replace("#", "");
-    if (activeId) updateBottomTabs(activeId);
+    setActiveTab(tabIdFromHash(), { scrollToTop: true });
   });
 
   render();

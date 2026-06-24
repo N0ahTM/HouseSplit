@@ -40,4 +40,4 @@ Exchange rates are loaded online from the Frankfurter API with the `ECB` provide
 
 Arrival dates count as occupied nights. Checkout dates do not count.
 
-On phones, the first screen focuses on the result. Use the bottom tabs to switch between result, people, and night plan. Larger edits open in bottom sheets.
+On phones, the bottom tabs switch between separate result, people, night plan, and setup screens. Larger edits open in bottom sheets.

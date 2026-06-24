@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.9.0
+
+- Reworked the mobile bottom navigation into four persistent top-level screens: result, people, night plan, and setup.
+- Kept desktop as a full overview dashboard while mobile tabs now switch views instead of relying on long-page scrolling.
+- Made apartments and history discoverable from the visible setup card, not only from the compact top bar icon.
+- Adjusted mobile tab sizing and icons for the four-destination iOS/Android app pattern.
+
 ## 1.8.1
 
 - Changed the Android/PWA launch splash background and initial theme color from near-white to the dark HouseSplit brand surface.
