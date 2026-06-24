@@ -1,6 +1,6 @@
 {
   "name": "house-split",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "private": true,
   "description": "Mobile-first rent sharing calculator by nights stayed.",
   "scripts": {

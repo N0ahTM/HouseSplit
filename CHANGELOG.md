@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.8.1
+
+- Changed the Android/PWA launch splash background and initial theme color from near-white to the dark HouseSplit brand surface.
+- Cache-busted the web app manifest so new installs pick up the updated splashscreen metadata.
+
 ## 1.8.0
 
 - Added German/English localization for the app shell, sheets, status messages, share text, and feedback toasts.
