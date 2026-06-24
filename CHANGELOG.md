@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.7.0
+
+- Changed the first-run state to one EUR-based full-month person instead of starting with unfinished extra people.
+- Improved mobile sheet focus so setup and person sheets no longer open directly into text input unless the user asked for a new entry.
+- Added clearer person-specific button labels and a `Fertig` action in person sheets.
+- Focused newly added stay ranges and highlighted them so date editing starts where the user just acted.
+- Improved dialog semantics and keyboard tab containment for bottom sheets.
+- Tightened narrow-mobile person action layout to avoid cramped or overflowing buttons.
+- Reworked the service worker to fetch navigations network-first and use the 1.7.0 cache-busted assets.
+
 ## 1.6.0
 
 - Added local multi-apartment storage with apartment switching, duplication, manual snapshots, and restore history.

@@ -25,13 +25,13 @@ When the app is opened in a normal browser tab, HouseSplit may show an install s
 ## Calculate A Month
 
 1. Enter the monthly rent and select the month.
-2. Add each person. Previously used names are offered again locally.
+2. Keep the first person, rename them, or add each additional person. Previously used names are offered again locally.
 3. Open a person sheet to add one or more arrival and checkout ranges. Choose `Zahlt in` if that person wants to pay in another currency.
 4. Open setup to choose vacancy behavior:
    - `Separat anzeigen`: empty nights remain separate.
    - `Auf alle Personen verteilen`: empty nights are split across everyone.
 5. If the rent is in another currency, open `EZB umrechnen`, choose the target currency, and convert it with the online Frankfurter/ECB reference rate.
-6. Copy the summary text and send it to the group.
+6. When the result says it is ready, copy or share the summary text and send it to the group.
 
 Data and saved person names are stored locally in the browser that opened the app.
 

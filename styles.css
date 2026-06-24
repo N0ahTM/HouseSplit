@@ -863,8 +863,8 @@ a:focus-visible {
 }
 
 .person-actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 8px;
 }
 
@@ -877,6 +877,12 @@ a:focus-visible {
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--surface-soft);
+}
+
+.stay-row.is-focused {
+  border-color: rgba(29, 78, 216, 0.38);
+  background: var(--color-blue-50);
+  box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.08);
 }
 
 .empty-note {
@@ -1252,6 +1258,10 @@ a:focus-visible {
   flex-wrap: wrap;
 }
 
+.sheet-actions.split > span:empty {
+  flex: 1 1 auto;
+}
+
 .share-field textarea {
   min-height: 220px;
 }
@@ -1442,8 +1452,7 @@ a:focus-visible {
     width: 100%;
   }
 
-  .summary-actions > *,
-  .person-actions > * {
+  .summary-actions > * {
     flex: 1 1 0;
   }
 
@@ -1536,6 +1545,10 @@ a:focus-visible {
 
   .sheet-actions.split {
     flex-direction: column;
+  }
+
+  .sheet-actions.split > span:empty {
+    display: none;
   }
 
   .sheet-actions > * {

@@ -84,6 +84,8 @@
   let isStandalone =
     window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
   let tabSyncLockedUntil = 0;
+  let pendingSheetFocus = "";
+  let focusedStayId = "";
 
   function createId(prefix) {
     if (window.crypto && typeof window.crypto.randomUUID === "function") {
@@ -143,7 +145,7 @@
     return {
       apartmentName: normalizeApartmentName(apartmentName, defaultApartmentName(1)),
       rent: 2000,
-      currency: "USD",
+      currency: "EUR",
       year: base.year,
       month: base.month,
       emptyNightPolicy: "unassigned",
@@ -151,11 +153,9 @@
         {
           id: createId("person"),
           name: "Person 1",
-          payCurrency: "USD",
+          payCurrency: "EUR",
           stays: [{ id: createId("stay"), start: bounds.start, end: bounds.checkout }],
         },
-        { id: createId("person"), name: "Person 2", payCurrency: "USD", stays: [] },
-        { id: createId("person"), name: "Person 3", payCurrency: "USD", stays: [] },
       ],
     };
   }
@@ -593,7 +593,7 @@
         detail: "Nächte eintragen.",
         action: "open-person",
         personId: state.people[0].id,
-        label: "Öffnen",
+        label: "Aufenthalte eintragen",
       };
     }
 
@@ -604,7 +604,7 @@
         detail: compactNameList(peopleWithoutNights),
         action: "open-person",
         personId: peopleWithoutNights[0].id,
-        label: "Prüfen",
+        label: "Aufenthalt prüfen",
       };
     }
 
@@ -1089,15 +1089,65 @@
   function closeSheet() {
     sheetState.type = null;
     sheetState.personId = null;
+    pendingSheetFocus = "";
+    focusedStayId = "";
   }
 
   function focusSheet() {
     window.setTimeout(() => {
       const sheet = document.querySelector(".sheet-panel");
       if (!sheet) return;
-      const focusTarget = sheet.querySelector("input, select, textarea") || sheet.querySelector("button");
+      const selector = pendingSheetFocus;
+      pendingSheetFocus = "";
+      const focusTarget = selector
+        ? sheet.querySelector(selector)
+        : sheet.querySelector("[data-sheet-focus]") || sheet;
+      if (focusTarget && selector) {
+        focusTarget.scrollIntoView({ block: "center" });
+        focusTarget.focus();
+        return;
+      }
       if (focusTarget) focusTarget.focus({ preventScroll: true });
     }, 0);
+  }
+
+  function sheetFocusableElements() {
+    const sheet = document.querySelector(".sheet-panel");
+    if (!sheet) return [];
+    return Array.from(
+      sheet.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ),
+    ).filter((element) => element.offsetWidth > 0 || element.offsetHeight > 0);
+  }
+
+  function trapSheetTab(event) {
+    if (!sheetState.type || event.key !== "Tab") return false;
+    const focusable = sheetFocusableElements();
+    if (!focusable.length) return false;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const activeElementIsInside = focusable.includes(document.activeElement);
+
+    if (!activeElementIsInside) {
+      event.preventDefault();
+      (event.shiftKey ? last : first).focus();
+      return true;
+    }
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+      return true;
+    }
+
+    if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+      return true;
+    }
+
+    return false;
   }
 
   function buildShareText(calculation) {
@@ -1258,8 +1308,14 @@
   }
 
   function renderStayRow(person, stay, bounds) {
+    const isFocusedStay = focusedStayId === stay.id;
     return `
-      <div class="stay-row" data-person-id="${escapeHtml(person.id)}" data-stay-id="${escapeHtml(stay.id)}">
+      <div
+        class="stay-row ${isFocusedStay ? "is-focused" : ""}"
+        data-person-id="${escapeHtml(person.id)}"
+        data-stay-id="${escapeHtml(stay.id)}"
+        ${isFocusedStay ? 'data-focus-stay="true"' : ""}
+      >
         <label class="field compact">
           <span>Anreise</span>
           <input data-field="stay-start" type="date" min="${bounds.start}" max="${bounds.lastNight}" value="${escapeHtml(stay.start)}">
@@ -1319,10 +1375,25 @@
                   </div>
 
                   <div class="person-actions">
-                    <button class="secondary-button" type="button" data-action="open-person">Person öffnen</button>
-                    <button class="ghost-button" type="button" data-action="add-stay">Nächte hinzufügen</button>
+                    <button
+                      class="secondary-button"
+                      type="button"
+                      data-action="open-person"
+                      aria-label="${escapeHtml(`${person.name} öffnen`)}"
+                    >Person öffnen</button>
+                    <button
+                      class="ghost-button"
+                      type="button"
+                      data-action="add-stay"
+                      aria-label="${escapeHtml(`Nächte für ${person.name} hinzufügen`)}"
+                    >Nächte hinzufügen</button>
                     ${state.people.length > 1 && total.nightsPresent === 0
-                      ? `<button class="ghost-button danger-text ${deleteArmed ? "danger-confirm" : ""}" type="button" data-action="remove-person">${deleteArmed ? "Wirklich entfernen" : "Entfernen"}</button>`
+                      ? `<button
+                          class="ghost-button danger-text ${deleteArmed ? "danger-confirm" : ""}"
+                          type="button"
+                          data-action="remove-person"
+                          aria-label="${escapeHtml(`${person.name} entfernen`)}"
+                        >${deleteArmed ? "Wirklich entfernen" : "Entfernen"}</button>`
                       : ""}
                   </div>
                 </article>
@@ -1349,6 +1420,7 @@
               type="button"
               data-action="${escapeHtml(status.action)}"
               ${status.personId ? `data-person-id="${escapeHtml(status.personId)}"` : ""}
+              aria-label="${escapeHtml(status.personId ? `${status.label}: ${status.detail}` : status.label)}"
               ${status.disabled ? "disabled" : ""}
             >${escapeHtml(status.label)}</button>`
           : ""}
@@ -1384,9 +1456,15 @@
                   type="button"
                   data-action="${escapeHtml(status.action)}"
                   ${status.personId ? `data-person-id="${escapeHtml(status.personId)}"` : ""}
+                  aria-label="${escapeHtml(status.personId ? `${status.label}: ${status.detail}` : status.label)}"
                   ${status.disabled ? "disabled" : ""}
                 >${escapeHtml(status.label)}</button>
-                <button class="secondary-button copy-button" type="button" data-action="blocked-share">Teilen gesperrt</button>`}
+                <button
+                  class="secondary-button copy-button"
+                  type="button"
+                  data-action="blocked-share"
+                  aria-label="Teilen ist gesperrt, weil die Abrechnung noch unvollständig ist"
+                >Teilen gesperrt</button>`}
           </div>
         </div>
 
@@ -1490,7 +1568,7 @@
       <div class="sheet-header">
         <div>
           <p class="eyebrow">${escapeHtml(kicker)}</p>
-          <h2>${escapeHtml(title)}</h2>
+          <h2 id="sheet-title" tabindex="-1" data-sheet-focus>${escapeHtml(title)}</h2>
         </div>
         <button class="icon-button" type="button" data-action="close-sheet" aria-label="Schließen" title="Schließen">×</button>
       </div>
@@ -1558,7 +1636,7 @@
             <strong>Als App nutzen</strong>
             <span>Installationshinweise für iPhone, Android und Desktop öffnen.</span>
           </div>
-          <button class="ghost-button" type="button" data-action="open-install-help">Öffnen</button>
+          <button class="ghost-button" type="button" data-action="open-install-help">Installationshilfe</button>
         </div>
 
         <div class="sheet-callout">
@@ -1566,7 +1644,7 @@
             <strong>Wohnungen & Verlauf</strong>
             <span>Mehrere Apartments lokal speichern und Sicherungen wiederherstellen.</span>
           </div>
-          <button class="secondary-button" type="button" data-action="open-apartments">Öffnen</button>
+          <button class="secondary-button" type="button" data-action="open-apartments">Wohnungen öffnen</button>
         </div>
 
         <div class="sheet-actions">
@@ -1815,13 +1893,18 @@
             <h3>Aufenthalte</h3>
             <p>Anreise zählt als Nacht, Abreise nicht.</p>
           </div>
-          <button class="secondary-button" type="button" data-action="add-stay">Nächte hinzufügen</button>
+          <button
+            class="secondary-button"
+            type="button"
+            data-action="add-stay"
+            aria-label="${escapeHtml(`Nächte für ${person.name} hinzufügen`)}"
+          >Nächte hinzufügen</button>
         </div>
 
         <div class="preset-actions" aria-label="Schnelle Aufenthalte">
-          <button class="ghost-button" type="button" data-action="first-half">Erste Hälfte</button>
-          <button class="ghost-button" type="button" data-action="second-half">Zweite Hälfte</button>
-          <button class="ghost-button" type="button" data-action="full-month">Ganzer Monat</button>
+          <button class="ghost-button" type="button" data-action="first-half" aria-label="${escapeHtml(`Erste Hälfte für ${person.name}`)}">Erste Hälfte</button>
+          <button class="ghost-button" type="button" data-action="second-half" aria-label="${escapeHtml(`Zweite Hälfte für ${person.name}`)}">Zweite Hälfte</button>
+          <button class="ghost-button" type="button" data-action="full-month" aria-label="${escapeHtml(`Ganzer Monat für ${person.name}`)}">Ganzer Monat</button>
         </div>
 
         <div class="stays">
@@ -1834,9 +1917,15 @@
         </div>
 
         <div class="sheet-actions split">
-          <button class="ghost-button danger-text ${deleteArmed ? "danger-confirm" : ""}" type="button" data-action="remove-person">
-            ${deleteArmed ? "Jetzt wirklich löschen" : "Person löschen"}
-          </button>
+          ${state.people.length > 1
+            ? `<button
+                class="ghost-button danger-text ${deleteArmed ? "danger-confirm" : ""}"
+                type="button"
+                data-action="remove-person"
+                aria-label="${escapeHtml(`${person.name} löschen`)}"
+              >${deleteArmed ? "Jetzt wirklich löschen" : "Person löschen"}</button>`
+            : `<span></span>`}
+          <button class="primary-button" type="button" data-action="close-sheet">Fertig</button>
         </div>
       </div>
     `;
@@ -1915,7 +2004,7 @@
     return `
       <div class="sheet-layer" role="presentation">
         <button class="sheet-backdrop" type="button" data-action="close-sheet" aria-label="Dialog schließen"></button>
-        <section class="sheet-panel" role="dialog" aria-modal="true">
+        <section class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="sheet-title" tabindex="-1">
           <span class="sheet-handle" aria-hidden="true"></span>
           ${content}
         </section>
@@ -2106,11 +2195,13 @@
     const nextStart = Math.min(Math.max(lastStay ? lastStay.end : monthStart, monthStart), monthEnd - 1);
     const nextEnd = Math.min(monthEnd, nextStart + 7);
 
-    person.stays.push({
+    const stay = {
       id: createId("stay"),
       start: formatISOFromDay(nextStart),
       end: formatISOFromDay(Math.max(nextStart + 1, nextEnd)),
-    });
+    };
+    person.stays.push(stay);
+    return stay;
   }
 
   function fullMonth(person) {
@@ -2519,6 +2610,7 @@
 
     if (action === "open-add-person" || action === "add-person") {
       openSheet("add-person");
+      pendingSheetFocus = ".new-person-input";
       render();
       focusSheet();
       return;
@@ -2550,12 +2642,20 @@
       const created = addPerson(input ? input.value : "");
       closeSheet();
       openSheet("person", { personId: created.id });
+      saveState();
+      render();
+      focusSheet();
+      return;
     }
 
     if (action === "use-saved-person") {
       const created = addPerson(button.dataset.name || "");
       closeSheet();
       openSheet("person", { personId: created.id });
+      saveState();
+      render();
+      focusSheet();
+      return;
     }
 
     if (action === "remove-person" && person) {
@@ -2573,7 +2673,9 @@
       return;
     }
     if (action === "add-stay" && person) {
-      addStay(person);
+      const stay = addStay(person);
+      focusedStayId = stay.id;
+      pendingSheetFocus = "[data-focus-stay] input[data-field='stay-start']";
       openSheet("person", { personId: person.id });
       saveState();
       render();
@@ -2581,6 +2683,7 @@
       return;
     }
     if (action === "full-month" && person) {
+      focusedStayId = "";
       fullMonth(person);
       saveState();
       render();
@@ -2588,6 +2691,7 @@
       return;
     }
     if (action === "first-half" && person) {
+      focusedStayId = "";
       firstHalf(person);
       saveState();
       render();
@@ -2595,6 +2699,7 @@
       return;
     }
     if (action === "second-half" && person) {
+      focusedStayId = "";
       secondHalf(person);
       saveState();
       render();
@@ -2602,6 +2707,7 @@
       return;
     }
     if (action === "remove-stay" && person && stayElement) {
+      focusedStayId = "";
       removeStay(person, stayElement.dataset.stayId);
       saveState();
       render();
@@ -2654,8 +2760,31 @@
   });
 
   if ("serviceWorker" in navigator) {
+    const hadServiceWorkerController = Boolean(navigator.serviceWorker.controller);
+    let serviceWorkerReloaded = false;
+
+    navigator.serviceWorker.addEventListener("message", (event) => {
+      if (event.data && event.data.type === "HOUSE_SPLIT_UPDATED") {
+        showToast("Neue Version verfügbar", {
+          actionLabel: "Neu laden",
+          onAction: () => window.location.reload(),
+          duration: 8000,
+        });
+        render();
+      }
+    });
+
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!hadServiceWorkerController || serviceWorkerReloaded) return;
+      serviceWorkerReloaded = true;
+      window.location.reload();
+    });
+
     window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+      navigator.serviceWorker
+        .register("./service-worker.js")
+        .then((registration) => registration.update())
+        .catch(() => {});
     });
   }
 
@@ -2685,6 +2814,7 @@
   });
 
   window.addEventListener("keydown", (event) => {
+    if (trapSheetTab(event)) return;
     if (event.key === "Escape" && sheetState.type) {
       closeSheet();
       render();
