@@ -79,6 +79,10 @@
     return Math.round(amount * 100);
   }
 
+  function normalizeBillingBasis(value) {
+    return value === "days" ? "days" : "nights";
+  }
+
   function allocateCents(totalCents, slots, offset) {
     if (!Number.isInteger(slots) || slots <= 0) return [];
 
@@ -96,7 +100,7 @@
     return values.map((value) => value * sign);
   }
 
-  function normalizePeople(people) {
+  function normalizePeople(people, billingBasis) {
     if (!Array.isArray(people)) return [];
 
     return people.map((person, index) => {
@@ -118,7 +122,8 @@
           .map((stay) => {
             const start = parseISODate(stay && stay.start);
             const end = parseISODate(stay && stay.end);
-            if (start === null || end === null || start === end) return null;
+            if (start === null || end === null) return null;
+            if (start === end && billingBasis !== "days") return null;
             return {
               start: Math.min(start, end),
               end: Math.max(start, end),
@@ -131,16 +136,19 @@
     });
   }
 
-  function personStaysNight(person, nightNumber) {
-    return person.stays.some(
-      (stay) => nightNumber >= stay.start && nightNumber < stay.end,
+  function personStaysUnit(person, unitNumber, billingBasis) {
+    return person.stays.some((stay) =>
+      billingBasis === "days"
+        ? unitNumber >= stay.start && unitNumber <= stay.end
+        : unitNumber >= stay.start && unitNumber < stay.end,
     );
   }
 
   function calculateRentShare(input) {
     const options = input || {};
     const { year, month } = normalizeYearMonth(options);
-    const people = normalizePeople(options.people);
+    const billingBasis = normalizeBillingBasis(options.billingBasis);
+    const people = normalizePeople(options.people, billingBasis);
     const rentCents = normalizeRentCents(options.rent);
     const monthNights = daysInMonth(year, month);
     const monthStart = parseISODate(formatISODate(year, month, 1));
@@ -158,8 +166,11 @@
           name: person.name,
           totalCents: 0,
           nightsPresent: 0,
+          unitsPresent: 0,
           soloNights: 0,
+          soloUnits: 0,
           sharedNights: 0,
+          sharedUnits: 0,
           emptyShareCents: 0,
         },
       ]),
@@ -171,7 +182,7 @@
       const nightNumber = monthStart + nightIndex;
       const date = formatISOFromDay(nightNumber);
       const nightRentCents = nightlyRentCents[nightIndex];
-      const occupants = people.filter((person) => personStaysNight(person, nightNumber));
+      const occupants = people.filter((person) => personStaysUnit(person, nightNumber, billingBasis));
       const isEmpty = occupants.length === 0;
       const recipients = isEmpty && emptyNightPolicy === "split_all" ? people : occupants;
       const shares = [];
@@ -179,8 +190,11 @@
       occupants.forEach((person) => {
         const total = totalsById.get(person.id);
         total.nightsPresent += 1;
+        total.unitsPresent += 1;
         if (occupants.length === 1) total.soloNights += 1;
+        if (occupants.length === 1) total.soloUnits += 1;
         if (occupants.length > 1) total.sharedNights += 1;
+        if (occupants.length > 1) total.sharedUnits += 1;
       });
 
       if (recipients.length > 0) {
@@ -208,7 +222,9 @@
       nightRows.push({
         date,
         nightOfMonth: nightIndex + 1,
+        unitOfMonth: nightIndex + 1,
         nightRentCents,
+        unitRentCents: nightRentCents,
         isEmpty,
         occupants: occupants.map((person) => ({
           id: person.id,
@@ -226,6 +242,8 @@
       year,
       month,
       monthNights,
+      monthUnits: monthNights,
+      billingBasis,
       rentCents,
       allocatedCents,
       unassignedCents,
@@ -233,6 +251,7 @@
       emptyDayPolicy: emptyNightPolicy,
       totals,
       nightRows,
+      unitRows: nightRows,
     };
   }
 

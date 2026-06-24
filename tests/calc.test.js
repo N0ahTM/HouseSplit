@@ -129,4 +129,40 @@ function byName(calculation, name) {
   assert.strictEqual(calculation.unassignedCents, 3000);
 }
 
-console.log("Alle Nächte-Rechentests bestanden.");
+{
+  const calculation = calculateRentShare({
+    rent: 300,
+    year: 2026,
+    month: 6,
+    billingBasis: "days",
+    emptyNightPolicy: "unassigned",
+    people: [
+      { id: "a", name: "A", stays: [{ start: "2026-06-01", end: "2026-06-10" }] },
+      { id: "b", name: "B", stays: [{ start: "2026-06-06", end: "2026-06-10" }] },
+    ],
+  });
+
+  assert.strictEqual(calculation.billingBasis, "days");
+  assert.strictEqual(byName(calculation, "A").nightsPresent, 10);
+  assert.strictEqual(byName(calculation, "A").unitsPresent, 10);
+  assert.strictEqual(byName(calculation, "B").nightsPresent, 5);
+  assert.strictEqual(byName(calculation, "A").totalCents, 7500);
+  assert.strictEqual(byName(calculation, "B").totalCents, 2500);
+  assert.strictEqual(calculation.unassignedCents, 20000);
+}
+
+{
+  const calculation = calculateRentShare({
+    rent: 30,
+    year: 2026,
+    month: 6,
+    billingBasis: "days",
+    people: [{ id: "a", name: "A", stays: [{ start: "2026-06-10", end: "2026-06-10" }] }],
+  });
+
+  assert.strictEqual(byName(calculation, "A").nightsPresent, 1);
+  assert.strictEqual(byName(calculation, "A").totalCents, 100);
+  assert.strictEqual(calculation.unassignedCents, 2900);
+}
+
+console.log("Alle Nächte- und Tage-Rechentests bestanden.");

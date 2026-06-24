@@ -564,6 +564,7 @@ a:focus-visible {
 .brand-block h1,
 .section-heading h2,
 .setup-summary h2,
+.setup-group h3,
 .summary-head h2,
 .person-name-block h3,
 .sheet-header h2,
@@ -582,6 +583,7 @@ a:focus-visible {
 .hero-lede,
 .section-note,
 .summary-rule,
+.setup-group p,
 .sheet-section-head p,
 .person-name-block p {
   margin: 7px 0 0;
@@ -703,6 +705,35 @@ a:focus-visible {
 .setup-actions {
   flex: 0 0 auto;
   justify-content: flex-end;
+}
+
+.setup-groups {
+  display: grid;
+  gap: 14px;
+}
+
+.setup-group {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.setup-group:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.setup-group-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.setup-group h3 {
+  font-size: 1rem;
 }
 
 .meter-block {
@@ -1683,6 +1714,7 @@ a:focus-visible {
 
   .summary-head,
   .setup-summary,
+  .setup-group-head,
   .section-heading {
     align-items: stretch;
     flex-direction: column;
@@ -1693,8 +1725,8 @@ a:focus-visible {
   .setup-actions,
   .copy-button,
   .section-heading .primary-button,
-  .setup-summary .secondary-button,
-  .setup-summary .ghost-button {
+  .setup-group .secondary-button,
+  .setup-group .ghost-button {
     width: 100%;
   }
 

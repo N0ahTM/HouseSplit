@@ -1,8 +1,8 @@
 {
   "name": "house-split",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "private": true,
-  "description": "Mobile-first rent sharing calculator by nights stayed.",
+  "description": "Mobile-first rent sharing calculator by nights or days stayed.",
   "scripts": {
     "test": "node tests/calc.test.js",
     "check": "node --check app.js && node --check calc.js && node --check service-worker.js"

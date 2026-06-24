@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.10.0
+
+- Split setup into separate Home & Billing and App & Appearance areas so apartment rules no longer mix with device preferences.
+- Added a per-home billing basis for nights or days. Night billing keeps arrival inclusive and checkout exclusive; day billing counts both dates inside the selected month.
+- Updated person sheets, result summaries, share text, saved-home summaries, and the mobile plan tab so labels follow the selected billing basis.
+- Added calculation coverage for day-based stays, including same-day stays.
+
 ## 1.9.0
 
 - Reworked the mobile bottom navigation into four persistent top-level screens: result, people, night plan, and setup.

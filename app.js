@@ -59,6 +59,7 @@
   ];
   const LANGUAGE_CODES = ["de", "en"];
   const TAB_VIEW_IDS = ["result", "people", "plan", "setup"];
+  const BILLING_BASIS_MODES = ["nights", "days"];
   const APPEARANCE_MODES = ["system", "light", "dark"];
   const CONTRAST_MODES = ["standard", "high"];
   const TRANSPARENCY_MODES = ["glass", "solid"];
@@ -81,10 +82,21 @@
       appAreas: "App-Bereiche",
       appUse: "Als App nutzen",
       appUseBody: "Installationshinweise für iPhone, Android und Desktop öffnen.",
+      appSettings: "App & Darstellung",
+      appSettingsBody: "Sprache, Theme, Kontrast, Liquid Glass und Installation gelten für diese App auf diesem Gerät.",
+      appSettingsOpen: "App-Einstellungen öffnen",
+      appSettingsShort: "App",
+      apartmentBilling: "Wohnung & Abrechnung",
+      apartmentBillingBody: "Miete, Monat, Währung, Abrechnungsbasis und Leerstand gelten nur für diese Wohnung.",
       arrival: "Anreise",
       arrivalCounts: "Anreise zählt als Nacht, Abreise nicht.",
       base: "Basis",
+      billingBasis: "Abrechnungsbasis",
       billingDetails: "Abrechnungsdetails",
+      billingRuleDays: "Anreise und Abreise zählen, soweit sie im gewählten Monat liegen.",
+      billingRuleNights: "Anreise zählt als Nacht, Abreise nicht.",
+      billingBasisDays: "Tage",
+      billingBasisNights: "Nächte",
       cancel: "Abbrechen",
       checkout: "Abreise",
       close: "Schließen",
@@ -120,6 +132,11 @@
       currencySourceBody: "Die App fragt online nur dieses Währungspaar ab. Miete, Namen und Aufenthalte werden nicht übertragen.",
       currencyTarget: "Zielwährung",
       dark: "Dunkel",
+      daySingular: "Tag",
+      dayPlural: "Tage",
+      daysAdd: "Tage hinzufügen",
+      daysAddFor: "Tage für {name} hinzufügen",
+      dayPlan: "Tagesplan",
       deletedStay: "Aufenthalt gelöscht",
       deleteStay: "Aufenthalt löschen",
       deletePerson: "Person löschen",
@@ -129,6 +146,7 @@
       edit: "Bearbeiten",
       empty: "Leer",
       emptyNightsShort: "{count} leer",
+      emptyUnitsShort: "{count} leer",
       emptySeparate: "Separat anzeigen",
       emptySplitAll: "Auf alle Personen verteilen",
       emptyStay: "Keine Nächte eingetragen",
@@ -155,7 +173,7 @@
       historySavedAlready: "Schon gesichert",
       historyRestored: "Sicherung wiederhergestellt",
       heroLede: "Mobile Abrechnung für WG, Ferienhaus und Freunde. Personen bleiben lokal gespeichert.",
-      heroTitle: "Miete nach Nächten teilen",
+      heroTitle: "Miete fair teilen",
       install: "Installieren",
       installBody: "Installiere HouseSplit als App auf diesem Gerät. Danach öffnet es ohne Browser-Leiste und funktioniert nach dem ersten Laden offline.",
       installBrowserBody: "Wenn dein Browser die Installation anbietet, findest du sie im Browser-Menü unter App installieren oder Zum Startbildschirm hinzufügen.",
@@ -196,7 +214,7 @@
       noSavedPeople: "Noch keine gespeicherten Personen",
       noSavedPeopleHint: "Namen werden automatisch lokal gemerkt, sobald du sie nutzt.",
       occupancy: "Aufteilung",
-      occupiedEmptyAverage: "{occupied} belegt · {empty} leer · ca. {amount} pro Nacht",
+      occupiedEmptyAverage: "{occupied} belegt · {empty} leer · ca. {amount} {unit}",
       offlineReady: "Offline bereit",
       open: "Öffnen",
       openPerson: "Person öffnen",
@@ -204,6 +222,7 @@
       paidIn: "Zahlt in {currency}",
       payIn: "Zahlt in",
       paymentAmount: "Zahlbetrag",
+      perDay: "pro Tag",
       people: "Personen",
       peopleKicker: "Bewohner",
       person: "Person",
@@ -267,7 +286,7 @@
       statusMissingRent: "Miete fehlt",
       statusMissingRentDetail: "Monatsmiete eintragen.",
       statusMissingStays: "Aufenthalte fehlen",
-      statusMissingStaysDetail: "Nächte eintragen.",
+      statusMissingStaysDetail: "Aufenthalte eintragen.",
       statusNoPeople: "Keine Personen",
       statusNoPeopleDetail: "Person hinzufügen.",
       statusRatesLoading: "Kurse laden",
@@ -287,7 +306,7 @@
       vacancyUnassigned: "nicht Personen zugeordnet",
       vacancyOpenSetup: "Öffne Setup, um Leerstand auf alle Personen zu verteilen.",
       visualMode: "Darstellung",
-      withoutNights: "{count} ohne Nächte",
+      withoutNights: "{count} ohne Aufenthalte",
     },
     en: {
       appOpenResult: "Open HouseSplit result",
@@ -307,10 +326,21 @@
       appAreas: "App areas",
       appUse: "Use as an app",
       appUseBody: "Open install instructions for iPhone, Android, and desktop.",
+      appSettings: "App & Appearance",
+      appSettingsBody: "Language, theme, contrast, Liquid Glass, and installation apply to this app on this device.",
+      appSettingsOpen: "Open app settings",
+      appSettingsShort: "App",
+      apartmentBilling: "Home & Billing",
+      apartmentBillingBody: "Rent, month, currency, billing basis, and vacancy rules apply only to this home.",
       arrival: "Arrival",
       arrivalCounts: "Arrival counts as a night, checkout does not.",
       base: "Base",
+      billingBasis: "Billing basis",
       billingDetails: "Billing details",
+      billingRuleDays: "Arrival and checkout both count when they fall inside the selected month.",
+      billingRuleNights: "Arrival counts as a night, checkout does not.",
+      billingBasisDays: "Days",
+      billingBasisNights: "Nights",
       cancel: "Cancel",
       checkout: "Checkout",
       close: "Close",
@@ -346,6 +376,11 @@
       currencySourceBody: "The app only requests this currency pair online. Rent, names, and stays are not transmitted.",
       currencyTarget: "Target currency",
       dark: "Dark",
+      daySingular: "day",
+      dayPlural: "days",
+      daysAdd: "Add days",
+      daysAddFor: "Add days for {name}",
+      dayPlan: "Day plan",
       deletedStay: "Stay deleted",
       deleteStay: "Delete stay",
       deletePerson: "Delete person",
@@ -355,6 +390,7 @@
       edit: "Edit",
       empty: "Empty",
       emptyNightsShort: "{count} empty",
+      emptyUnitsShort: "{count} empty",
       emptySeparate: "Show separately",
       emptySplitAll: "Split across all people",
       emptyStay: "No nights entered",
@@ -381,7 +417,7 @@
       historySavedAlready: "Already saved",
       historyRestored: "Backup restored",
       heroLede: "Mobile billing for flatshares, vacation homes, and friends. People stay saved locally.",
-      heroTitle: "Split rent by nights",
+      heroTitle: "Split rent fairly",
       install: "Install",
       installBody: "Install HouseSplit as an app on this device. It opens without browser chrome and works offline after the first load.",
       installBrowserBody: "If your browser offers installation, find it in the browser menu under Install app or Add to home screen.",
@@ -422,7 +458,7 @@
       noSavedPeople: "No saved people yet",
       noSavedPeopleHint: "Names are remembered locally as soon as you use them.",
       occupancy: "Split",
-      occupiedEmptyAverage: "{occupied} occupied · {empty} empty · about {amount} per night",
+      occupiedEmptyAverage: "{occupied} occupied · {empty} empty · about {amount} {unit}",
       offlineReady: "Offline ready",
       open: "Open",
       openPerson: "Open person",
@@ -430,6 +466,7 @@
       paidIn: "Pays in {currency}",
       payIn: "Pays in",
       paymentAmount: "Payment amount",
+      perDay: "per day",
       people: "People",
       peopleKicker: "Residents",
       person: "Person",
@@ -493,7 +530,7 @@
       statusMissingRent: "Rent missing",
       statusMissingRentDetail: "Enter monthly rent.",
       statusMissingStays: "Stays missing",
-      statusMissingStaysDetail: "Enter nights.",
+      statusMissingStaysDetail: "Enter stays.",
       statusNoPeople: "No people",
       statusNoPeopleDetail: "Add a person.",
       statusRatesLoading: "Loading rates",
@@ -513,7 +550,7 @@
       vacancyUnassigned: "not assigned to people",
       vacancyOpenSetup: "Open setup to split vacancy across all people.",
       visualMode: "Appearance",
-      withoutNights: "{count} without nights",
+      withoutNights: "{count} without stays",
     },
   };
   const root = document.querySelector("#app");
@@ -592,6 +629,13 @@
     return [
       optionHtml("de", UI_TEXT.de.languageGerman, selected),
       optionHtml("en", UI_TEXT.de.languageEnglish, selected),
+    ].join("");
+  }
+
+  function billingBasisOptions(selected) {
+    return [
+      optionHtml("nights", t("billingBasisNights"), selected),
+      optionHtml("days", t("billingBasisDays"), selected),
     ].join("");
   }
 
@@ -704,6 +748,7 @@
       currency: "EUR",
       year: base.year,
       month: base.month,
+      billingBasis: "nights",
       emptyNightPolicy: "unassigned",
       ...preferences,
       people: [
@@ -717,12 +762,16 @@
     };
   }
 
-  function normalizeStay(stay) {
+  function normalizeStay(stay, billingBasis) {
     const start = stay && typeof stay.start === "string" ? stay.start : "";
     let end = stay && typeof stay.end === "string" ? stay.end : "";
 
     if (start && end && parseISODate(end) !== null && parseISODate(start) !== null) {
-      if (parseISODate(end) <= parseISODate(start)) end = addDaysISO(start, 1);
+      const startDay = parseISODate(start);
+      const endDay = parseISODate(end);
+      if (endDay < startDay || (billingBasis !== "days" && endDay <= startDay)) {
+        end = addDaysISO(start, billingBasis === "days" ? 0 : 1);
+      }
     }
 
     return {
@@ -738,6 +787,7 @@
     const year = Number(state.year) || fallback.year;
     const month = Number(state.month) || fallback.month;
     const people = Array.isArray(state.people) ? state.people : fallback.people;
+    const billingBasis = normalizeChoice(state.billingBasis, BILLING_BASIS_MODES, fallback.billingBasis);
     const emptyNightPolicy =
       state.emptyNightPolicy === "split_all" || state.emptyDayPolicy === "split_all"
         ? "split_all"
@@ -749,6 +799,7 @@
       currency: normalizeCurrencyCode(state.currency, "USD"),
       year: Math.min(Math.max(year, 1900), 2200),
       month: Math.min(Math.max(month, 1), 12),
+      billingBasis,
       emptyNightPolicy,
       language: normalizeChoice(state.language, LANGUAGE_CODES, fallback.language),
       appearance: normalizeChoice(state.appearance, APPEARANCE_MODES, fallback.appearance),
@@ -761,7 +812,7 @@
             ? person.name
             : `Person ${personIndex + 1}`,
         payCurrency: normalizeCurrencyCode(person.payCurrency, normalizeCurrencyCode(state.currency, "USD")),
-        stays: Array.isArray(person.stays) ? person.stays.map(normalizeStay) : [],
+        stays: Array.isArray(person.stays) ? person.stays.map((stay) => normalizeStay(stay, billingBasis)) : [],
       })),
     };
   }
@@ -776,8 +827,13 @@
     }
   }
 
+  function stripAppPreferences(apartmentState) {
+    const { language, appearance, contrast, transparency, ...billingState } = apartmentState;
+    return billingState;
+  }
+
   function cleanStateForApartment(value, name) {
-    const nextState = sanitizeState(value);
+    const nextState = stripAppPreferences(sanitizeState(value));
     nextState.apartmentName = normalizeApartmentName(name || nextState.apartmentName, nextState.apartmentName);
     return nextState;
   }
@@ -1202,7 +1258,7 @@
         detail: t("statusMissingStaysDetail"),
         action: "open-person",
         personId: state.people[0].id,
-        label: t("nightsAdd"),
+        label: unitAddLabel(),
       };
     }
 
@@ -1547,7 +1603,7 @@
     syncActiveApartmentState(options || {});
     persistApartmentStore();
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(cleanStateForApartment(state, state.apartmentName)));
     } catch (error) {
       // Some mobile file previews block localStorage; the calculator still works in-memory.
     }
@@ -1638,7 +1694,8 @@
       rent: formatMoney(calculation.rentCents, apartmentState.currency, localeCode()),
       month: apartmentMonthLabel(apartmentState),
       people: apartmentState.people.length,
-      nights: calculation.monthNights,
+      units: calculation.monthUnits,
+      basis: billingBasisLabel(apartmentState),
     };
   }
 
@@ -1666,6 +1723,47 @@
 
   function nightCountLabel(count) {
     return `${count} ${nightWord(count)}`;
+  }
+
+  function billingBasis(sourceState = state) {
+    return normalizeChoice(sourceState.billingBasis, BILLING_BASIS_MODES, "nights");
+  }
+
+  function usesDayBilling(sourceState = state) {
+    return billingBasis(sourceState) === "days";
+  }
+
+  function unitWord(count, sourceState = state) {
+    if (usesDayBilling(sourceState)) return count === 1 ? t("daySingular") : t("dayPlural");
+    return nightWord(count);
+  }
+
+  function unitCountLabel(count, sourceState = state) {
+    return `${count} ${unitWord(count, sourceState)}`;
+  }
+
+  function unitAddLabel(sourceState = state) {
+    return usesDayBilling(sourceState) ? t("daysAdd") : t("nightsAdd");
+  }
+
+  function unitAddForLabel(name, sourceState = state) {
+    return usesDayBilling(sourceState) ? t("daysAddFor", { name }) : t("nightsAddFor", { name });
+  }
+
+  function unitPlanLabel(sourceState = state) {
+    return usesDayBilling(sourceState) ? t("dayPlan") : t("nightPlan");
+  }
+
+  function unitRateLabel(sourceState = state) {
+    return usesDayBilling(sourceState) ? t("perDay") : t("perNight");
+  }
+
+  function billingRuleLabel(sourceState = state) {
+    return usesDayBilling(sourceState) ? t("billingRuleDays") : t("billingRuleNights");
+  }
+
+  function billingBasisLabel(sourceState = state) {
+    return usesDayBilling(sourceState) ? t("billingBasisDays") : t("billingBasisNights");
   }
 
   function personCountLabel(count) {
@@ -1783,8 +1881,8 @@
     const lines = [
       t("shareRentLine", { month: monthLabel(), amount: money(calculation.rentCents) }),
       t("shareBaseLine", {
-        nights: nightCountLabel(calculation.monthNights),
-        rule: t("arrivalCounts"),
+        nights: unitCountLabel(calculation.monthUnits),
+        rule: billingRuleLabel(),
       }),
       "",
       t("shareSharesHeading"),
@@ -1793,7 +1891,7 @@
         const payment = personPaymentInfo(statePerson, person.totalCents);
         const parts = [
           `${person.name}: ${money(person.totalCents)}`,
-          `${person.nightsPresent} ${nightWord(person.nightsPresent)}`,
+          unitCountLabel(person.nightsPresent),
         ];
         if (payment.convertedText && payment.isConverted) {
           parts.push(t("sharePays", { amount: payment.convertedText }));
@@ -1913,9 +2011,9 @@
                 <span>${escapeHtml(t("install"))}</span>
               </button>`
             : ""}
-          <button class="icon-label-button" type="button" data-action="open-settings" aria-label="${escapeHtml(t("setupOpen"))}">
+          <button class="icon-label-button" type="button" data-action="open-app-settings" aria-label="${escapeHtml(t("appSettingsOpen"))}">
             <span class="button-icon icon-settings" aria-hidden="true"></span>
-            <span>${escapeHtml(t("setup"))}</span>
+            <span>${escapeHtml(t("appSettingsShort"))}</span>
           </button>
         </div>
       </header>
@@ -1937,7 +2035,7 @@
           </div>
           <div>
             <span>${escapeHtml(t("period"))}</span>
-            <strong>${calculation.monthNights} ${nightWord(calculation.monthNights)}</strong>
+            <strong>${unitCountLabel(calculation.monthUnits)}</strong>
           </div>
           <div>
             <span>${escapeHtml(t("mode"))}</span>
@@ -1956,20 +2054,50 @@
         <div class="setup-summary">
           <div>
             <p class="eyebrow">${escapeHtml(t("setup"))}</p>
-            <h2 id="settings-title">${escapeHtml(t("monthlyData"))}</h2>
-            <p class="section-note">${escapeHtml(monthLabel())} · ${money(calculation.rentCents)} · ${state.currency}</p>
-          </div>
-          <div class="setup-actions">
-            <button class="secondary-button" type="button" data-action="open-settings">${escapeHtml(t("edit"))}</button>
-            <button class="ghost-button" type="button" data-action="open-apartments">${escapeHtml(t("apartments"))}</button>
+            <h2 id="settings-title">${escapeHtml(t("setup"))}</h2>
+            <p class="section-note">${escapeHtml(t("apartmentBilling"))} · ${escapeHtml(t("appSettings"))}</p>
           </div>
         </div>
 
-        <div class="setup-chips" aria-label="${escapeHtml(t("billingDetails"))}">
-          <span>${calculation.monthNights} ${nightWord(calculation.monthNights)}</span>
-          <span>${escapeHtml(t("emptyNightsShort", { count: emptyNightCount }))}</span>
-          <span>${escapeHtml(vacancyLabel(calculation))}</span>
-          <span>${escapeHtml(personCountLabel(state.people.length))}</span>
+        <div class="setup-groups">
+          <div class="setup-group">
+            <div class="setup-group-head">
+              <div>
+                <h3>${escapeHtml(t("apartmentBilling"))}</h3>
+                <p>${escapeHtml(t("apartmentBillingBody"))}</p>
+              </div>
+              <div class="setup-actions">
+                <button class="secondary-button" type="button" data-action="open-settings">${escapeHtml(t("edit"))}</button>
+                <button class="ghost-button" type="button" data-action="open-apartments">${escapeHtml(t("apartments"))}</button>
+              </div>
+            </div>
+            <div class="setup-chips" aria-label="${escapeHtml(t("billingDetails"))}">
+              <span>${escapeHtml(monthLabel())}</span>
+              <span>${money(calculation.rentCents)}</span>
+              <span>${escapeHtml(billingBasisLabel())}</span>
+              <span>${escapeHtml(t("emptyUnitsShort", { count: emptyNightCount }))}</span>
+              <span>${escapeHtml(vacancyLabel(calculation))}</span>
+              <span>${escapeHtml(personCountLabel(state.people.length))}</span>
+            </div>
+          </div>
+
+          <div class="setup-group">
+            <div class="setup-group-head">
+              <div>
+                <h3>${escapeHtml(t("appSettings"))}</h3>
+                <p>${escapeHtml(t("appSettingsBody"))}</p>
+              </div>
+              <div class="setup-actions">
+                <button class="secondary-button" type="button" data-action="open-app-settings">${escapeHtml(t("edit"))}</button>
+              </div>
+            </div>
+            <div class="setup-chips" aria-label="${escapeHtml(t("appSettings"))}">
+              <span>${escapeHtml(currentLanguage() === "en" ? t("languageEnglish") : t("languageGerman"))}</span>
+              <span>${escapeHtml(t(state.appearance === "dark" ? "dark" : state.appearance === "light" ? "light" : "themeSystem"))}</span>
+              <span>${escapeHtml(t(state.contrast === "high" ? "contrastHigh" : "contrastStandard"))}</span>
+              <span>${escapeHtml(t(state.transparency === "solid" ? "solidSurfaces" : "liquidGlass"))}</span>
+            </div>
+          </div>
         </div>
       </section>
     `;
@@ -2021,7 +2149,7 @@
               const amountDetail =
                 payment.isConverted && payment.convertedText
                   ? `${payment.baseText} ${t("base")}`
-                  : payment.convertedText || `${total.nightsPresent} ${nightWord(total.nightsPresent)}`;
+                  : payment.convertedText || unitCountLabel(total.nightsPresent);
               return `
                 <article class="person-card" data-person-id="${escapeHtml(person.id)}">
                   <div class="person-topline">
@@ -2056,8 +2184,8 @@
                       class="ghost-button"
                       type="button"
                       data-action="add-stay"
-                      aria-label="${escapeHtml(t("nightsAddFor", { name: person.name }))}"
-                    >${escapeHtml(t("nightsAdd"))}</button>
+                      aria-label="${escapeHtml(unitAddForLabel(person.name))}"
+                    >${escapeHtml(unitAddLabel())}</button>
                     ${state.people.length > 1 && total.nightsPresent === 0
                       ? `<button
                           class="ghost-button danger-text ${deleteArmed ? "danger-confirm" : ""}"
@@ -2116,7 +2244,7 @@
               ${money(calculation.allocatedCents)}
               <span>${escapeHtml(t("splitTotal"))}</span>
             </h2>
-            <p class="summary-rule">${calculation.monthNights} ${nightWord(calculation.monthNights)} · ${vacancyLabel(calculation)}</p>
+            <p class="summary-rule">${unitCountLabel(calculation.monthUnits)} · ${vacancyLabel(calculation)}</p>
           </div>
           <div class="summary-actions">
             ${canShare
@@ -2155,8 +2283,8 @@
               const displayAmount = payment.isConverted && payment.convertedText ? payment.convertedText : payment.baseText;
               const amountDetail =
                 payment.isConverted && payment.convertedText
-                  ? `${payment.baseText} ${t("base")} · ${person.nightsPresent} ${nightWord(person.nightsPresent)}`
-                  : payment.convertedText || `${person.nightsPresent} ${nightWord(person.nightsPresent)}`;
+                  ? `${payment.baseText} ${t("base")} · ${unitCountLabel(person.nightsPresent)}`
+                  : payment.convertedText || unitCountLabel(person.nightsPresent);
               return `
                 <div class="total-tile">
                   <div class="total-tile-head">
@@ -2192,7 +2320,7 @@
 
   function renderNightBreakdown(calculation) {
     const emptyNightCount = calculation.nightRows.filter((night) => night.isEmpty).length;
-    const occupiedNightCount = calculation.monthNights - emptyNightCount;
+    const occupiedNightCount = calculation.monthUnits - emptyNightCount;
     const averageNightRent = calculation.nightRows[0] ? calculation.nightRows[0].nightRentCents : 0;
 
     return `
@@ -2200,11 +2328,12 @@
         <div class="section-heading">
           <div>
             <p class="eyebrow">${escapeHtml(monthLabel())}</p>
-            <h2 id="nights-title">${escapeHtml(t("nightPlan"))}</h2>
+            <h2 id="nights-title">${escapeHtml(unitPlanLabel())}</h2>
             <p class="section-note">${escapeHtml(t("occupiedEmptyAverage", {
               occupied: occupiedNightCount,
               empty: emptyNightCount,
               amount: money(averageNightRent),
+              unit: unitRateLabel(),
             }))}</p>
           </div>
         </div>
@@ -2256,7 +2385,7 @@
   function renderSettingsSheet(calculation) {
     const resetArmed = Date.now() <= resetArmedUntil;
     return `
-      ${renderSheetHeader(t("monthlyData"), t("setup"))}
+      ${renderSheetHeader(t("apartmentBilling"), t("setup"))}
       <div class="sheet-body">
         <div class="control-grid">
           <label class="field">
@@ -2282,6 +2411,13 @@
           </label>
 
           <label class="field">
+            <span>${escapeHtml(t("billingBasis"))}</span>
+            <select data-field="billingBasis">
+              ${billingBasisOptions(state.billingBasis)}
+            </select>
+          </label>
+
+          <label class="field">
             <span>${escapeHtml(t("vacancy"))}</span>
             <select data-field="emptyNightPolicy">
               <option value="unassigned" ${state.emptyNightPolicy === "unassigned" ? "selected" : ""}>${escapeHtml(t("emptySeparate"))}</option>
@@ -2290,11 +2426,55 @@
           </label>
         </div>
 
-        <div class="sheet-callout preference-callout">
+        <div class="sheet-note">
+          <strong>${escapeHtml(billingBasisLabel())}</strong>
+          <span>${escapeHtml(billingRuleLabel())}</span>
+        </div>
+
+        <div class="sheet-stat-grid">
           <div>
-            <strong>${escapeHtml(t("lookAndFeel"))}</strong>
-            <span>${escapeHtml(t("lookAndFeelBody"))}</span>
+            <span>${escapeHtml(t("billingBasis"))}</span>
+            <strong>${escapeHtml(unitCountLabel(calculation.monthUnits))}</strong>
           </div>
+          <div>
+            <span>${escapeHtml(t("splitTotal"))}</span>
+            <strong>${money(calculation.allocatedCents)}</strong>
+          </div>
+        </div>
+
+        <div class="sheet-callout">
+          <div>
+            <strong>${escapeHtml(t("currencyConvert"))}</strong>
+            <span>${escapeHtml(t("currencyConvertBody"))}</span>
+          </div>
+          <button class="secondary-button" type="button" data-action="open-currency-converter">${escapeHtml(t("currencyConvertRent"))}</button>
+        </div>
+
+        <div class="sheet-callout">
+          <div>
+            <strong>${escapeHtml(t("apartmentsAndHistory"))}</strong>
+            <span>${escapeHtml(t("multipleApartmentsBody"))}</span>
+          </div>
+          <button class="secondary-button" type="button" data-action="open-apartments">${escapeHtml(t("apartmentsOpen"))}</button>
+        </div>
+
+        <div class="sheet-actions">
+          <button class="ghost-button danger-text ${resetArmed ? "danger-confirm" : ""}" type="button" data-action="reset">
+            ${escapeHtml(resetArmed ? t("resetArmed") : t("reset"))}
+          </button>
+          <button class="primary-button" type="button" data-action="close-sheet">${escapeHtml(t("done"))}</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderAppSettingsSheet() {
+    return `
+      ${renderSheetHeader(t("appSettings"), t("preferences"))}
+      <div class="sheet-body">
+        <div class="sheet-note">
+          <strong>${escapeHtml(t("lookAndFeel"))}</strong>
+          <span>${escapeHtml(t("lookAndFeelBody"))}</span>
         </div>
 
         <div class="control-grid preference-grid">
@@ -2327,25 +2507,6 @@
           </label>
         </div>
 
-        <div class="sheet-stat-grid">
-          <div>
-            <span>${escapeHtml(t("month"))}</span>
-            <strong>${calculation.monthNights} ${nightWord(calculation.monthNights)}</strong>
-          </div>
-          <div>
-            <span>${escapeHtml(t("splitTotal"))}</span>
-            <strong>${money(calculation.allocatedCents)}</strong>
-          </div>
-        </div>
-
-        <div class="sheet-callout">
-          <div>
-            <strong>${escapeHtml(t("currencyConvert"))}</strong>
-            <span>${escapeHtml(t("currencyConvertBody"))}</span>
-          </div>
-          <button class="secondary-button" type="button" data-action="open-currency-converter">${escapeHtml(t("currencyConvertRent"))}</button>
-        </div>
-
         <div class="sheet-callout">
           <div>
             <strong>${escapeHtml(t("appUse"))}</strong>
@@ -2354,18 +2515,7 @@
           <button class="ghost-button" type="button" data-action="open-install-help">${escapeHtml(t("appInstallHelp"))}</button>
         </div>
 
-        <div class="sheet-callout">
-          <div>
-            <strong>${escapeHtml(t("apartmentsAndHistory"))}</strong>
-            <span>${escapeHtml(t("multipleApartmentsBody"))}</span>
-          </div>
-          <button class="secondary-button" type="button" data-action="open-apartments">${escapeHtml(t("apartmentsOpen"))}</button>
-        </div>
-
         <div class="sheet-actions">
-          <button class="ghost-button danger-text ${resetArmed ? "danger-confirm" : ""}" type="button" data-action="reset">
-            ${escapeHtml(resetArmed ? t("resetArmed") : t("reset"))}
-          </button>
           <button class="primary-button" type="button" data-action="close-sheet">${escapeHtml(t("done"))}</button>
         </div>
       </div>
@@ -2381,7 +2531,7 @@
       <article class="apartment-card ${isActive ? "is-active" : ""}" data-apartment-id="${escapeHtml(apartment.id)}">
         <div>
           <strong>${escapeHtml(apartment.name)}</strong>
-          <span>${escapeHtml(summary.month)} · ${escapeHtml(summary.rent)} · ${escapeHtml(personCountLabel(summary.people))}</span>
+          <span>${escapeHtml(summary.month)} · ${escapeHtml(summary.rent)} · ${escapeHtml(summary.basis)} · ${escapeHtml(personCountLabel(summary.people))}</span>
           <small>${escapeHtml(t("apartmentSaved", { date: dateTimeLabel(apartment.updatedAt) }))}</small>
         </div>
         ${isActive
@@ -2398,7 +2548,7 @@
       <article class="history-row" data-history-id="${escapeHtml(entry.id)}">
         <div>
           <strong>${escapeHtml(entry.reason)}</strong>
-          <span>${escapeHtml(summary.month)} · ${escapeHtml(summary.rent)} · ${escapeHtml(personCountLabel(summary.people))}</span>
+          <span>${escapeHtml(summary.month)} · ${escapeHtml(summary.rent)} · ${escapeHtml(summary.basis)} · ${escapeHtml(personCountLabel(summary.people))}</span>
           <small>${escapeHtml(dateTimeLabel(entry.createdAt))}</small>
         </div>
         <button class="ghost-button" type="button" data-action="restore-history">${escapeHtml(t("restore"))}</button>
@@ -2592,8 +2742,8 @@
             <strong>${money(total.totalCents)}</strong>
           </div>
           <div>
-            <span>${escapeHtml(t("nightPlural"))}</span>
-            <strong>${total.nightsPresent} ${nightWord(total.nightsPresent)}</strong>
+            <span>${escapeHtml(billingBasisLabel())}</span>
+            <strong>${escapeHtml(unitCountLabel(total.nightsPresent))}</strong>
           </div>
           <div>
             <span>${escapeHtml(t("solo"))}</span>
@@ -2612,14 +2762,14 @@
         <div class="sheet-section-head">
           <div>
             <h3>${escapeHtml(t("stayPlural"))}</h3>
-            <p>${escapeHtml(t("arrivalCounts"))}</p>
+            <p>${escapeHtml(billingRuleLabel())}</p>
           </div>
           <button
             class="secondary-button"
             type="button"
             data-action="add-stay"
-            aria-label="${escapeHtml(t("nightsAddFor", { name: person.name }))}"
-          >${escapeHtml(t("nightsAdd"))}</button>
+            aria-label="${escapeHtml(unitAddForLabel(person.name))}"
+          >${escapeHtml(unitAddLabel())}</button>
         </div>
 
         <div class="preset-actions" aria-label="${escapeHtml(t("stayPlural"))}">
@@ -2714,6 +2864,7 @@
 
     let content = "";
     if (sheetState.type === "settings") content = renderSettingsSheet(calculation);
+    if (sheetState.type === "app-settings") content = renderAppSettingsSheet();
     if (sheetState.type === "apartments") content = renderApartmentsSheet();
     if (sheetState.type === "currency") content = renderCurrencySheet();
     if (sheetState.type === "install") content = renderInstallSheet();
@@ -2783,7 +2934,7 @@
         </a>
         <a class="${activeTabId === "plan" ? "is-active" : ""}" href="#plan" ${activeTabId === "plan" ? 'aria-current="page"' : ""}>
           <span class="tab-icon tab-plan" aria-hidden="true"></span>
-          <span>${escapeHtml(t("nightPlan"))}</span>
+          <span>${escapeHtml(unitPlanLabel())}</span>
         </a>
         <a class="${activeTabId === "setup" ? "is-active" : ""}" href="#setup" ${activeTabId === "setup" ? 'aria-current="page"' : ""}>
           <span class="tab-icon tab-setup" aria-hidden="true"></span>
@@ -2831,6 +2982,14 @@
       return true;
     }
 
+    if (field === "billingBasis") {
+      state.billingBasis = normalizeChoice(target.value, BILLING_BASIS_MODES, "nights");
+      state.people.forEach((person) => {
+        person.stays = person.stays.map((stay) => normalizeStay(stay, state.billingBasis));
+      });
+      return true;
+    }
+
     if (field === "language") {
       state.language = normalizeChoice(target.value, LANGUAGE_CODES, state.language || detectedLanguage());
       return true;
@@ -2874,16 +3033,24 @@
 
     if (field === "stay-start" && stay) {
       stay.start = target.value;
-      if (stay.end && parseISODate(stay.end) <= parseISODate(stay.start)) {
-        stay.end = addDaysISO(stay.start, 1);
+      if (stay.end && parseISODate(stay.start) !== null && parseISODate(stay.end) !== null) {
+        const startDay = parseISODate(stay.start);
+        const endDay = parseISODate(stay.end);
+        if (endDay < startDay || (!usesDayBilling() && endDay <= startDay)) {
+          stay.end = addDaysISO(stay.start, usesDayBilling() ? 0 : 1);
+        }
       }
       return true;
     }
 
     if (field === "stay-end" && stay) {
       stay.end = target.value;
-      if (stay.start && parseISODate(stay.end) <= parseISODate(stay.start)) {
-        stay.end = addDaysISO(stay.start, 1);
+      if (stay.start && parseISODate(stay.start) !== null && parseISODate(stay.end) !== null) {
+        const startDay = parseISODate(stay.start);
+        const endDay = parseISODate(stay.end);
+        if (endDay < startDay || (!usesDayBilling() && endDay <= startDay)) {
+          stay.end = addDaysISO(stay.start, usesDayBilling() ? 0 : 1);
+        }
       }
       return true;
     }
@@ -2940,13 +3107,14 @@
       .filter((stay) => stay.start !== null && stay.end !== null)
       .sort((a, b) => a.start - b.start);
     const lastStay = validStays[validStays.length - 1];
-    const nextStart = Math.min(Math.max(lastStay ? lastStay.end : monthStart, monthStart), monthEnd - 1);
-    const nextEnd = Math.min(monthEnd, nextStart + 7);
+    const nextStartSeed = lastStay ? lastStay.end + (usesDayBilling() ? 1 : 0) : monthStart;
+    const nextStart = Math.min(Math.max(nextStartSeed, monthStart), monthEnd - 1);
+    const nextEnd = Math.min(monthEnd, nextStart + (usesDayBilling() ? 6 : 7));
 
     const stay = {
       id: createId("stay"),
       start: formatISOFromDay(nextStart),
-      end: formatISOFromDay(Math.max(nextStart + 1, nextEnd)),
+      end: formatISOFromDay(usesDayBilling() ? Math.max(nextStart, nextEnd) : Math.max(nextStart + 1, nextEnd)),
     };
     person.stays.push(stay);
     return stay;
@@ -2954,17 +3122,18 @@
 
   function fullMonth(person) {
     const bounds = monthBounds(state);
-    person.stays = [{ id: createId("stay"), start: bounds.start, end: bounds.checkout }];
+    person.stays = [{ id: createId("stay"), start: bounds.start, end: usesDayBilling() ? bounds.lastNight : bounds.checkout }];
   }
 
   function firstHalf(person) {
     const bounds = monthBounds(state);
     const secondHalfStartDay = Math.floor(daysInMonth(state.year, state.month) / 2) + 1;
+    const firstHalfEndDay = usesDayBilling() ? secondHalfStartDay - 1 : secondHalfStartDay;
     person.stays = [
       {
         id: createId("stay"),
         start: bounds.start,
-        end: formatISODate(state.year, state.month, secondHalfStartDay),
+        end: formatISODate(state.year, state.month, firstHalfEndDay),
       },
     ];
   }
@@ -3265,6 +3434,13 @@
 
     if (action === "open-settings") {
       openSheet("settings");
+      render();
+      focusSheet();
+      return;
+    }
+
+    if (action === "open-app-settings") {
+      openSheet("app-settings");
       render();
       focusSheet();
       return;
